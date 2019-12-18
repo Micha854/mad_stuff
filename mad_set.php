@@ -93,13 +93,13 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>routecalc</b></td></tr>';
 	$sql_p = $mysqli->query("SELECT q.routecalc_id, p.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_pokestops p	ON p.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = p.area_id WHERE p.area_id IS NOT NULL ");
 	$sql_m = $mysqli->query("SELECT q.routecalc_id, m.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm m	ON m.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = m.area_id WHERE m.area_id IS NOT NULL ");
-	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL ");
-	$sql_r = $mysqli->query("SELECT q.routecalc_id, r.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm r	ON r.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = r.area_id WHERE r.area_id IS NOT NULL ");
+	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_iv_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL ");
+	$sql_r = $mysqli->query("SELECT q.routecalc_id, r.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_raids_mitm r	ON r.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = r.area_id WHERE r.area_id IS NOT NULL ");
 	$out = '';	  
-	while($id = $sql_p->fetch_array() ) {
+	while($id = $sql_m->fetch_array() ) {
 		$out.= '<tr class="p"><td>mon_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
 	}
-	while($id = $sql_m->fetch_array() ) {
+	while($id = $sql_p->fetch_array() ) {
 		$out.= '<tr class="m"><td>pokestops</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
 	}
 	while($id = $sql_i->fetch_array() ) {
