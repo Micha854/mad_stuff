@@ -17,6 +17,12 @@ if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
 
+$structure = __DIR__."/routecalc";
+if (!file_exists($structure)) {
+	if (!mkdir($structure, 0777, true)) {
+    	die('Erstellung der Verzeichnisse schlug fehl...');
+	}
+}
 
 // show pokemon_ids on string
 if(isset($_GET["list"])) {
@@ -48,6 +54,11 @@ if(isset($_GET["route"])) {
 	if(isset($_POST["newroute"])) {
 		$routefile	= mysqli_real_escape_string($mysqli, $_POST["route"]);
 		mysqli_query($mysqli, "UPDATE settings_routecalc SET routefile = '$routefile' WHERE routecalc_id = ".$poeted);
+		
+		$datei = fopen(__DIR__."/routecalc/$poeted.txt","w");
+		fwrite($datei, date("d.m.Y - H:i:s"),100);
+		fclose($datei);
+		
 		echo '<h1 style="background:#009900">save</h1>';
 	}
 	
@@ -90,23 +101,27 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 		echo '<h1 style="background:#009900">save</h1>';
 	}
 } else {
-	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>routecalc</b></td></tr>';
+	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>routecalc</b></td><td><b>last change</b></td></tr>';
 	$sql_p = $mysqli->query("SELECT q.routecalc_id, p.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_pokestops p	ON p.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = p.area_id WHERE p.area_id IS NOT NULL ");
 	$sql_m = $mysqli->query("SELECT q.routecalc_id, m.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm m	ON m.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = m.area_id WHERE m.area_id IS NOT NULL ");
 	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_iv_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL ");
 	$sql_r = $mysqli->query("SELECT q.routecalc_id, r.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_raids_mitm r	ON r.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = r.area_id WHERE r.area_id IS NOT NULL ");
 	$out = '';	  
 	while($id = $sql_m->fetch_array() ) {
-		$out.= '<tr class="p"><td>mon_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
+		$change = file_exists($structure."/".$id["routecalc_id"].".txt") ? file_get_contents(__DIR__."/routecalc/".$id["routecalc_id"].".txt") : 'NULL';
+		$out.= '<tr class="p"><td>mon_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td><td>'.$change.'</td></tr>';
 	}
 	while($id = $sql_p->fetch_array() ) {
-		$out.= '<tr class="m"><td>pokestops</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
+		$change = file_exists($structure."/".$id["routecalc_id"].".txt") ? file_get_contents(__DIR__."/routecalc/".$id["routecalc_id"].".txt") : 'NULL';
+		$out.= '<tr class="m"><td>pokestops</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td><td>'.$change.'</td></tr>';
 	}
 	while($id = $sql_i->fetch_array() ) {
-		$out.= '<tr class="i"><td>iv_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
+		$change = file_exists($structure."/".$id["routecalc_id"].".txt") ? file_get_contents(__DIR__."/routecalc/".$id["routecalc_id"].".txt") : 'NULL';
+		$out.= '<tr class="i"><td>iv_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td><td>'.$change.'</td></tr>';
 	}
 	while($id = $sql_r->fetch_array() ) {
-		$out.= '<tr class="r"><td>raids_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td></tr>';
+		$change = file_exists($structure."/".$id["routecalc_id"].".txt") ? file_get_contents(__DIR__."/routecalc/".$id["routecalc_id"].".txt") : 'NULL';
+		$out.= '<tr class="r"><td>raids_mitm</td><td>'.$id["name"].'</td><td>'.$id["area_id"].'</td><td><a href="?route='.$id["routecalc_id"].'&amp;name='.$id["name"].'">'.$id["routecalc_id"].'</a></td><td>'.$change.'</td></tr>';
 	}
 		$end = '</table>';
 }
@@ -145,7 +160,8 @@ background: #99CC00
 }
 td {
 padding-left:10px;
-line-height:140%;
+padding-right:10px;
+line-height:160%;
 border-collapse: collapse
 }
 table {
