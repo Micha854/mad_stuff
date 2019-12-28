@@ -48,7 +48,13 @@ color: #FF0000;
 background:#FFFF99
 }
 
-@media only screen and (min-width: 500px) {
+@media only screen and (min-width: 550px) {
+  html {
+    font-size:26px
+  }
+  table {
+    width:100%
+  }
   .mobile {
   	display:none
   }
