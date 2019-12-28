@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$url	= 'http://'.$_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);	// "http" or "https"
+$url	= 'http://'.$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];	// "http" or "https"
 $reload = 10;	// reload page in seconds
 
 if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
@@ -17,7 +17,7 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url?>/mad_devices.php<?=$sortIndex?>">
+<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url?>">
 <title>MAD - Devices</title>
 <style type="text/css">
 td {
