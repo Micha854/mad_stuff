@@ -159,6 +159,7 @@ while($row = $sql->fetch_array()) {
 		echo "<tr style=\"background:".$background."\"><td>".$origin."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td>";
 	}
 }
+echo '</table>';
 ?>
 </body>
 </html>
