@@ -2,7 +2,10 @@
 session_start();
 
 $url	= 'http://'.$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];	// "http" or "https"
+$beep	= "<audio autoplay height=\"0\" width=\"0\"><source src=\"beep.mp3\" type=\"audio/mpeg\"></audio>";
 $reload = 10;	// reload page in seconds
+$offline= 10;	// Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
+$notify = 1200;	// bei offline erneute Benachrichtigung nach 20 Minuten
 
 if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$_SESSION["sort"] = '?spalte='.$_GET["spalte"].'&sort='.$_GET["sort"];
@@ -112,12 +115,20 @@ foreach ($spalten as $spalte => $name) {
 echo '</tr>';
 
 while($row = $sql->fetch_array()) {
+	$origin = $row["origin"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		echo "<tr style=\"background:#FF6666\"><td>".$row["origin"]."</td><td>N/A</td><td>N/A</td><td>not found in \"trs_status\"</td>";
+		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>not found in \"trs_status\"</td>";
 	} else {
-		if($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime('- 10 minutes'))) {
+		if($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $offline minutes"))) {
 			$status = 'offline';
 			$background = '#FFFF99';
+			
+			if(!isset($_SESSION[$origin])) {
+				echo $beep;
+				$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
+			} elseif($_SESSION[$origin]["time"] < time()-$notify) {
+				unset($_SESSION[$origin]);
+			}
 		} else {
 			$status = 'online';
 			$background = '#66CC66';
@@ -145,10 +156,9 @@ while($row = $sql->fetch_array()) {
             $time = $months." month ago";
 		}
 		
-		echo "<tr style=\"background:".$background."\"><td>".$row["origin"]."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td>";
+		echo "<tr style=\"background:".$background."\"><td>".$origin."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td>";
 	}
 }
-echo '</table>';
 ?>
 </body>
 </html>
