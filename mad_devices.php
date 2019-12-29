@@ -3,7 +3,7 @@ session_start();
 
 $url	= 'http://'.$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];	// "http" or "https"
 $beep	= "<audio autoplay height=\"0\" width=\"0\"><source src=\"beep.mp3\" type=\"audio/mpeg\"></audio>";
-$reload = 10;	// reload page in seconds
+$reload = 30;	// reload page in seconds
 $offline= 10;	// Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
 $notify = 1200;	// bei offline erneute Benachrichtigung nach 20 Minuten
 
@@ -73,11 +73,18 @@ if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
 
+if(isset($_GET["reset"]) == '1') {
+	session_destroy();
+	header("Location: http://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
+	exit;
+}
+
 $spalten = array(
 "origin"				=> "<b>Origin:</b><span class=\"mobile\"><br></span> ",
 "r.name"				=> "<b>Route:</b><span class=\"mobile\"><br></span> ",
 "t.routePos"			=> "<b>Pos:</b><span class=\"mobile\"><br></span> ",
-"t.lastProtoDateTime"	=> "<b>Last Action:</b><span class=\"mobile\"><br></span> ");
+"t.lastProtoDateTime"	=> "<b>Last:</b><span class=\"mobile\"><br></span> ",
+"t.currentSleepTime"	=> "<b>Next:</b><span class=\"mobile\"><br></span> ");
 
 $spalte = isset($_GET["spalte"]) ? $_GET["spalte"] : 't.lastProtoDateTime'; // Default-Wert
 $sort = isset($_GET["sort"]) ? $_GET["sort"] : 'asc';
@@ -90,7 +97,7 @@ if (!in_array($sort, array('desc', 'asc'))) {
 	$sort = 'asc'; // Default-Wert
 }
 
-$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.name = t.origin LEFT JOIN settings_area r ON r.area_id = t.routemanager ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
+$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.name = t.origin LEFT JOIN settings_area r ON r.area_id = t.routemanager ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
 
 echo '<table><tr>';
 foreach ($spalten as $spalte => $name) {
@@ -113,25 +120,28 @@ foreach ($spalten as $spalte => $name) {
 	'</td>';
 }
 echo '</tr>';
-
+$i = 0;
 while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
+	$next_seconds = $row["currentSleepTime"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>not found in \"trs_status\"</td>";
+		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
 	} else {
-		if($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $offline minutes"))) {
-			$status = 'offline';
-			$background = '#FFFF99';
-			
-			if(!isset($_SESSION[$origin])) {
-				echo $beep;
-				$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
-			} elseif($_SESSION[$origin]["time"] < time()-$notify) {
-				unset($_SESSION[$origin]);
-			}
-		} else {
-			$status = 'online';
-			$background = '#66CC66';
+	
+		$next_months = floor($next_seconds / (3600*24*30));
+        $next_day = floor($next_seconds / (3600*24));
+        $next_hours = floor($next_seconds / 3600);
+        $next_mins = floor(($next_seconds - ($next_hours*3600)) / 60);
+        $next_secs = floor($next_seconds % 60);
+		
+		if($next_seconds == 0) {
+			$next = "now";
+		} else if($next_seconds < 60) {
+            $next = $next_secs." sec";
+        } else if($next_seconds < 60*60 ) {
+            $next = $next_mins." min";
+        } else if($next_seconds < 24*60*60) {
+            $next = $next_hours." hours";
 		}
 		
 		$date_now = new DateTime();
@@ -145,21 +155,46 @@ while($row = $sql->fetch_array()) {
         $secs = floor($seconds % 60);
 		
 		if($seconds < 60) {
-            $time = $secs." seconds ago";
+            $time = $secs." sec ago";
         } else if($seconds < 60*60 ) {
             $time = "<span class=\"warn\">".$mins." min ago</span>";
         } else if($seconds < 24*60*60) {
-            $time = $hours." hours ago";
+            $time = "<span class=\"warn\">".$hours." hours ago</span>";
         } else if($seconds < 24*60*60) {
             $time = $day." day ago";
-        } else {
-            $time = $months." month ago";
+        }
+		
+		$cooldown = $offline * 60 + $next_seconds;
+		
+		if($secs < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds")) ) {
+			$status = 'online';
+			$background = '#66CCFF';
+		} elseif($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $offline minutes"))) {
+			$status = 'offline';
+			$background = '#FFFF99';
+				if(!isset($_SESSION[$origin])) {
+					if($i == 0) {
+						echo $beep;
+						$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
+						$i++;
+					}
+				} elseif($_SESSION[$origin]["time"] < time()-$notify) {
+					unset($_SESSION[$origin]);
+				}
+		} else {
+			$status = 'online';
+			$background = '#66CC66';
 		}
 		
-		echo "<tr style=\"background:".$background."\"><td>".$origin."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td>";
+		echo "<tr style=\"background:".$background."\"><td>".$origin."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
 	}
 }
 echo '</table>';
+//echo '<pre>';
+//print_r($_SESSION);
+//echo '</pre>';
+//session_destroy();
 ?>
+<div style="margin-top:20px; text-align:center"><a href="mad_devices.php?reset=1">reset notify &amp; sorting</a></div>
 </body>
 </html>
