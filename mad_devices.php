@@ -142,7 +142,7 @@ while($row = $sql->fetch_array()) {
             $next = $next_mins." min";
         } else if($next_seconds < 24*60*60) {
             $next = $next_hours." hours";
-		}
+		} 
 		
 		$date_now = new DateTime();
 		$date_row = new DateTime($row["lastProtoDateTime"]);
@@ -160,9 +160,11 @@ while($row = $sql->fetch_array()) {
             $time = "<span class=\"warn\">".$mins." min ago</span>";
         } else if($seconds < 24*60*60) {
             $time = "<span class=\"warn\">".$hours." hours ago</span>";
-        } else if($seconds < 24*60*60) {
+        } else if($seconds < 4*24*60*60) {
             $time = $day." day ago";
-        }
+        } else {
+            $time = $months." month ago";
+		}
 		
 		$cooldown = $offline * 60 + $next_seconds;
 		
@@ -195,6 +197,17 @@ echo '</table>';
 //echo '</pre>';
 //session_destroy();
 ?>
+<script type="text/javascript">
+var i = <?=$reload?>;
+(function timer(){
+    if (--i < 0) return;
+    setTimeout(function(){
+        document.getElementsByTagName('h4')[0].innerHTML = 'reload in ' + i;
+        timer();
+    }, 1000);
+})();
+</script>
+<h4 style="text-align:center">reload in <?=$reload?></h4>
 <div style="margin-top:20px; text-align:center"><a href="mad_devices.php?reset=1">reset notify &amp; sorting</a></div>
 </body>
 </html>
