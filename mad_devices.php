@@ -1,11 +1,23 @@
 <?php
 session_start();
 
-$url	= 'http://'.$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];	// "http" or "https"
-$beep	= "<audio autoplay height=\"0\" width=\"0\"><source src=\"beep.mp3\" type=\"audio/mpeg\"></audio>";
-$reload = 30;	// reload page in seconds
-$offline= 10;	// Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
-$notify = 1200;	// bei offline erneute Benachrichtigung nach 20 Minuten
+// CONFIG THIS PART ######################################################################
+$url	= 'https';		// "http" or "https"
+
+$reload = 30;		  // reload page in seconds
+$wartime= 180;		  // es wird nach dieser zeit (sekunden) lediglich eine warnung angezeigt
+$offline= 10;		  // Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
+
+$beep	= 'beep.mp3'; // mp3 sound file
+$notify = 1200;		  // bei offline erneute Benachrichtigung nach 20 Minuten
+
+$breite	= '100%';	  // tabellenbreite, angabe in % oder px
+$size	= '26px';	  // font-size in px or pt | not work on mobile
+##########################################################################################
+
+
+
+
 
 if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$_SESSION["sort"] = '?spalte='.$_GET["spalte"].'&sort='.$_GET["sort"];
@@ -21,8 +33,18 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url?>">
+<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']?>/mad_devices.php<?=$sortIndex?>">
 <title>MAD - Devices</title>
 <style type="text/css">
+* {
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    width:<?=$breite?>
+}
+  
 td {
 padding-left:5px;
 padding-right:5px;
@@ -53,10 +75,7 @@ background:#FFFF99
 
 @media only screen and (min-width: 550px) {
   html {
-    font-size:26px
-  }
-  table {
-    width:100%
+    font-size:<?=$size?>
   }
   .mobile {
   	display:none
@@ -75,7 +94,7 @@ if ($mysqli->connect_error) {
 
 if(isset($_GET["reset"]) == '1') {
 	session_destroy();
-	header("Location: http://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
+	header("Location: ".$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
 	exit;
 }
 
@@ -157,9 +176,17 @@ while($row = $sql->fetch_array()) {
 		if($seconds < 60) {
             $time = $secs." sec ago";
         } else if($seconds < 60*60 ) {
-            $time = "<span class=\"warn\">".$mins." min ago</span>";
+			if($seconds > $wartime) {
+            	$time = "<span class=\"warn\">".$mins." min ago</span>";
+			} else {
+				$time = $mins." min ago";
+			}
         } else if($seconds < 24*60*60) {
-            $time = "<span class=\"warn\">".$hours." hours ago</span>";
+			if($seconds > $next_seconds) {
+            	$time = "<span class=\"warn\">".$hours." hours ago</span>";
+			} else {
+				$time = $hours." hours ago";
+			}
         } else if($seconds < 4*24*60*60) {
             $time = $day." day ago";
         } else {
@@ -168,7 +195,7 @@ while($row = $sql->fetch_array()) {
 		
 		$cooldown = $offline * 60 + $next_seconds;
 		
-		if($secs < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds")) ) {
+		if($seconds < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds")) ) {
 			$status = 'online';
 			$background = '#66CCFF';
 		} elseif($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $offline minutes"))) {
@@ -176,7 +203,7 @@ while($row = $sql->fetch_array()) {
 			$background = '#FFFF99';
 				if(!isset($_SESSION[$origin])) {
 					if($i == 0) {
-						echo $beep;
+						echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"$beep\" type=\"audio/mpeg\"></audio>";
 						$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
 						$i++;
 					}
@@ -207,7 +234,7 @@ var i = <?=$reload?>;
     }, 1000);
 })();
 </script>
-<h4 style="text-align:center">reload in <?=$reload?></h4>
+<h4 style="margin-top:20px; text-align:center">reload in <?=$reload?></h4>
 <div style="margin-top:20px; text-align:center"><a href="mad_devices.php?reset=1">reset notify &amp; sorting</a></div>
 </body>
 </html>
