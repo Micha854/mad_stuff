@@ -73,6 +73,12 @@ color: #FF0000;
 background:#FFFF99
 }
 
+@media only screen and (max-width: 550px) {
+  table {
+    width:100%
+  }
+}
+
 @media only screen and (min-width: 550px) {
   html {
     font-size:<?=$size?>
