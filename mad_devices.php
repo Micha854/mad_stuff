@@ -33,7 +33,7 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url?>">
-<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']?>/mad_devices.php<?=$sortIndex?>">
+<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex?>">
 <title>MAD - Devices</title>
 <style type="text/css">
 * {
@@ -145,7 +145,7 @@ foreach ($spalten as $spalte => $name) {
 	'</td>';
 }
 echo '</tr>';
-$i = 0;
+$i = 1;
 while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
 	$next_seconds = $row["currentSleepTime"];
@@ -208,8 +208,8 @@ while($row = $sql->fetch_array()) {
 			$status = 'offline';
 			$background = '#FFFF99';
 				if(!isset($_SESSION[$origin])) {
-					if($i == 0) {
-						echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"$beep\" type=\"audio/mpeg\"></audio>";
+					if($i == 1) {
+						echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
 						$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
 						$i++;
 					}
