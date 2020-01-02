@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-// CONFIG THIS PART ######################################################################
+// CONFIG THIS PART ###########################################################################
 $url	= 'https';		// "http" or "https"
 
-$reload = 30;		  // reload page in seconds
+$reload = 10;		  // reload page in seconds
 $wartime= 180;		  // es wird nach dieser zeit (sekunden) lediglich eine warnung angezeigt
 $offline= 10;		  // Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
 
@@ -13,7 +13,8 @@ $notify = 1200;		  // bei offline erneute Benachrichtigung nach 20 Minuten
 
 $breite	= '100%';	  // tabellenbreite, angabe in % oder px
 $size	= '26px';	  // font-size in px or pt | not work on mobile
-##########################################################################################
+$pos	= 0;		  // Route Pos auf der mobilen Version anzeigen = 1 oder ausblenden = 0
+###############################################################################################
 
 
 
@@ -77,6 +78,7 @@ background:#FFFF99
   table {
     width:100%
   }
+  <?php if($pos == 0) { ?> .pos { display: none} <?php } ?>
 }
 
 @media only screen and (min-width: 550px) {
@@ -104,6 +106,23 @@ if(isset($_GET["reset"]) == '1') {
 	exit;
 }
 
+if(isset($_GET["mute"])) {
+	if($_GET["mute"] == 'off') {
+		if(isset($_SESSION[$_GET['origin']])) {
+			unset($_SESSION[$_GET['origin']]);
+		}
+	} elseif($_GET["mute"] == 'on') {
+		if(isset($_SESSION[$_GET['origin']])) {
+			$_SESSION[$_GET['origin']]['mute'] = 'mute';
+			$_SESSION[$_GET['origin']]['time'] = 9999999999;
+		}
+	} elseif($_GET["mute"] == 'all') {
+			$_SESSION['mute'] = 'all';
+	} elseif($_GET["mute"] == 'reset') {
+			unset($_SESSION['mute']);
+	}
+}
+		
 $spalten = array(
 "origin"				=> "<b>Origin:</b><span class=\"mobile\"><br></span> ",
 "r.name"				=> "<b>Route:</b><span class=\"mobile\"><br></span> ",
@@ -138,11 +157,20 @@ foreach ($spalten as $spalte => $name) {
 		$active = '';
 		$active2 = '';
 	}
-	echo '<td>' .
-	ucfirst($name) .
-	'<a href="?spalte=' . $spalte . '&sort=asc" '.$active.' title="Aufsteigend sortieren">&#9650;</a>' .
-	'<a href="?spalte=' . $spalte . '&sort=desc" '.$active2.' title="Absteigend sortieren">&#9660;</a>' .
-	'</td>';
+	
+	if($spalte == 't.routePos') {
+		echo '<td class="pos">' .
+		ucfirst($name) .
+		'<a href="?spalte=' . $spalte . '&sort=asc" '.$active.' title="Aufsteigend sortieren">&#9650;</a>' .
+		'<a href="?spalte=' . $spalte . '&sort=desc" '.$active2.' title="Absteigend sortieren">&#9660;</a>' .
+		'</td>';
+	} else {
+		echo '<td>' .
+		ucfirst($name) .
+		'<a href="?spalte=' . $spalte . '&sort=asc" '.$active.' title="Aufsteigend sortieren">&#9650;</a>' .
+		'<a href="?spalte=' . $spalte . '&sort=desc" '.$active2.' title="Absteigend sortieren">&#9660;</a>' .
+		'</td>';
+	}
 }
 echo '</tr>';
 $i = 1;
@@ -172,7 +200,7 @@ while($row = $sql->fetch_array()) {
 		$date_now = new DateTime();
 		$date_row = new DateTime($row["lastProtoDateTime"]);
 		$seconds = $date_now->getTimestamp() - $date_row->getTimestamp();
-		
+				
 		$months = floor($seconds / (3600*24*30));
         $day = floor($seconds / (3600*24));
         $hours = floor($seconds / 3600);
@@ -182,13 +210,13 @@ while($row = $sql->fetch_array()) {
 		if($seconds < 60) {
             $time = $secs." sec ago";
         } else if($seconds < 60*60 ) {
-			if($seconds > $wartime) {
+			if($seconds > $wartime + $next_seconds) {
             	$time = "<span class=\"warn\">".$mins." min ago</span>";
 			} else {
 				$time = $mins." min ago";
 			}
         } else if($seconds < 24*60*60) {
-			if($seconds > $next_seconds) {
+			if($seconds > $wartime + $next_seconds) {
             	$time = "<span class=\"warn\">".$hours." hours ago</span>";
 			} else {
 				$time = $hours." hours ago";
@@ -204,31 +232,54 @@ while($row = $sql->fetch_array()) {
 		if($seconds < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds")) ) {
 			$status = 'online';
 			$background = '#66CCFF';
-		} elseif($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $offline minutes"))) {
+		} elseif($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $cooldown seconds"))) {
 			$status = 'offline';
 			$background = '#FFFF99';
 				if(!isset($_SESSION[$origin])) {
-					if($i == 1) {
-						echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
-						$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
-						$i++;
-					}
+					//if($i == 1) {
+						if(!isset($_SESSION[$origin]['mute']) && !isset($_SESSION['mute'])) {
+							echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
+							$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
+							$i++;
+						}
+					//}
 				} elseif($_SESSION[$origin]["time"] < time()-$notify) {
 					unset($_SESSION[$origin]);
 				}
 		} else {
 			$status = 'online';
 			$background = '#66CC66';
+			if(isset($_SESSION[$origin])) {
+				unset($_SESSION[$origin]);
+			}
 		}
-		
-		echo "<tr style=\"background:".$background."\"><td>".$origin."</td><td>".$row["name"]."</td><td>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
+
+		if($status == 'offline') {
+			if(isset($_SESSION[$origin]['mute']) == 'mute') {
+				if(isset($_SESSION["sort"])) {
+					$mute = '<a href="'.$sortIndex.'&mute=off&origin='.$origin.'">'.$origin.' &#128263;</a>';
+				} else {
+					$mute = '<a href="?mute=off&origin='.$origin.'">'.$origin.' &#128263;</a>';
+				}
+			}else {
+				if(isset($_SESSION["sort"])) {
+					$mute = '<a href="'.$sortIndex.'&mute=on&origin='.$origin.'">'.$origin.'</a>';
+				} else {
+					$mute = '<a href="?mute=on&origin='.$origin.'">'.$origin.'</a>';
+				}
+			}
+		} else {
+			$mute = $origin;
+		}
+
+		echo "<tr style=\"background:".$background."\"><td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
 	}
 }
 echo '</table>';
+
 //echo '<pre>';
 //print_r($_SESSION);
 //echo '</pre>';
-//session_destroy();
 ?>
 <script type="text/javascript">
 var i = <?=$reload?>;
@@ -241,6 +292,23 @@ var i = <?=$reload?>;
 })();
 </script>
 <h4 style="margin-top:20px; text-align:center">reload in <?=$reload?></h4>
-<div style="margin-top:20px; text-align:center"><a href="mad_devices.php?reset=1">reset notify &amp; sorting</a></div>
+<div style="margin-top:20px; text-align:center">
+<?php
+if(!isset($_SESSION["mute"]) == 'all') {
+	if(isset($_SESSION["sort"])) {
+		echo '<a href="'.$sortIndex.'&mute=all">&#128263;</a> | ';
+	} else {
+		echo '<a href="?mute=all">&#128263;</a> | ';
+	}
+} else {
+	if(isset($_SESSION["sort"])) {
+		echo '<a href="'.$sortIndex.'&mute=reset">&#128264;</a> | ';
+	} else {
+		echo '<a href="?mute=reset">&#128264;</a> | ';
+	}
+}
+?>
+	<a href="mad_devices.php?reset=1">reset notify &amp; sorting</a>
+</div>
 </body>
 </html>
