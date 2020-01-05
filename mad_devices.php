@@ -275,9 +275,9 @@ while($row = $sql->fetch_array()) {
 }
 echo '</table>';
 
-echo '<pre>';
-print_r($_SESSION);
-echo '</pre>';
+//echo '<pre>';
+//print_r($_SESSION);
+//echo '</pre>';
 ?>
 <script type="text/javascript">
 var i = <?=$reload?>;
