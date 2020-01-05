@@ -13,7 +13,7 @@ $notify = 1200;		  // bei offline erneute Benachrichtigung nach 20 Minuten
 
 $breite	= '100%';	  // tabellenbreite, angabe in % oder px
 $size	= '26px';	  // font-size in px or pt | not work on mobile
-$pos	= 0;		  // Route Pos auf der mobilen Version anzeigen = 1 oder ausblenden = 0
+$pos	= 1;		  // Route Pos auf der mobilen Version anzeigen = 1 oder ausblenden = 0
 ###############################################################################################
 
 
@@ -178,11 +178,9 @@ while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
 	$next_seconds = $row["currentSleepTime"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
+		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
 	} else {
 	
-		$next_months = floor($next_seconds / (3600*24*30));
-        $next_day = floor($next_seconds / (3600*24));
         $next_hours = floor($next_seconds / 3600);
         $next_mins = floor(($next_seconds - ($next_hours*3600)) / 60);
         $next_secs = floor($next_seconds % 60);
@@ -221,9 +219,9 @@ while($row = $sql->fetch_array()) {
 			} else {
 				$time = $hours." hours ago";
 			}
-        } else if($seconds < 4*24*60*60) {
+        } else if($seconds > 24*60*60) {
             $time = $day." day ago";
-        } else {
+        } else if($seconds > 30*24*60*60) {
             $time = $months." month ago";
 		}
 		
@@ -261,7 +259,7 @@ while($row = $sql->fetch_array()) {
 				} else {
 					$mute = '<a href="?mute=off&origin='.$origin.'">'.$origin.' &#128263;</a>';
 				}
-			}else {
+			} else {
 				if(isset($_SESSION["sort"])) {
 					$mute = '<a href="'.$sortIndex.'&mute=on&origin='.$origin.'">'.$origin.'</a>';
 				} else {
@@ -277,9 +275,9 @@ while($row = $sql->fetch_array()) {
 }
 echo '</table>';
 
-//echo '<pre>';
-//print_r($_SESSION);
-//echo '</pre>';
+echo '<pre>';
+print_r($_SESSION);
+echo '</pre>';
 ?>
 <script type="text/javascript">
 var i = <?=$reload?>;
@@ -296,15 +294,15 @@ var i = <?=$reload?>;
 <?php
 if(!isset($_SESSION["mute"]) == 'all') {
 	if(isset($_SESSION["sort"])) {
-		echo '<a href="'.$sortIndex.'&mute=all">&#128263;</a> | ';
+		echo '<a href="'.$sortIndex.'&mute=all">&#128264;</a> | ';
 	} else {
-		echo '<a href="?mute=all">&#128263;</a> | ';
+		echo '<a href="?mute=all">&#128264;</a> | ';
 	}
 } else {
 	if(isset($_SESSION["sort"])) {
-		echo '<a href="'.$sortIndex.'&mute=reset">&#128264;</a> | ';
+		echo '<a href="'.$sortIndex.'&mute=reset">&#128263;</a> | ';
 	} else {
-		echo '<a href="?mute=reset">&#128264;</a> | ';
+		echo '<a href="?mute=reset">&#128263;</a> | ';
 	}
 }
 ?>
