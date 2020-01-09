@@ -1,24 +1,7 @@
 <?php
 session_start();
 
-// CONFIG THIS PART ###########################################################################
-$url	= 'https';		// "http" or "https"
-
-$reload = 10;		  // reload page in seconds
-$wartime= 180;		  // es wird nach dieser zeit (sekunden) lediglich eine warnung angezeigt
-$offline= 10;		  // Geräte nach 10 Minuten als Offline kennzeichnen und Benachrichtigen
-
-$beep	= 'beep.mp3'; // mp3 sound file
-$notify = 1200;		  // bei offline erneute Benachrichtigung nach 20 Minuten
-
-$breite	= '100%';	  // tabellenbreite, angabe in % oder px
-$size	= '26px';	  // font-size in px or pt | not work on mobile
-$pos	= 1;		  // Route Pos auf der mobilen Version anzeigen = 1 oder ausblenden = 0
-###############################################################################################
-
-
-
-
+require_once("config.php");
 
 if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$_SESSION["sort"] = '?spalte='.$_GET["spalte"].'&sort='.$_GET["sort"];
@@ -79,6 +62,7 @@ background:#FFFF99
     width:100%
   }
   <?php if($pos == 0) { ?> .pos { display: none} <?php } ?>
+  <?php if($count == 0) { ?> .count { display: none} <?php } ?>
 }
 
 @media only screen and (min-width: 550px) {
@@ -90,11 +74,11 @@ background:#FFFF99
   }
 }
 </style>
+
 </head>
 <body>
+<div id="javascript-timer-init" style="display:none"><?=$notify?></div>
 <?php
-require_once("config.php");
-
 $mysqli = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
 if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
@@ -108,18 +92,27 @@ if(isset($_GET["reset"]) == '1') {
 
 if(isset($_GET["mute"])) {
 	if($_GET["mute"] == 'off') {
-		if(isset($_SESSION[$_GET['origin']])) {
-			unset($_SESSION[$_GET['origin']]);
+		if(isset($_COOKIE[$_GET['origin']])) {
+			//unset($_COOKIE[$_GET['origin'].'[mute]']);
+			setcookie($_GET['origin'].'[origin]',	$_GET['origin'],		time());
+			setcookie($_GET['origin'].'[time]',		time(),					time());
+			setcookie($_GET['origin'].'[mute]',		"",						time());
 		}
 	} elseif($_GET["mute"] == 'on') {
-		if(isset($_SESSION[$_GET['origin']])) {
-			$_SESSION[$_GET['origin']]['mute'] = 'mute';
-			$_SESSION[$_GET['origin']]['time'] = 9999999999;
+		if(isset($_COOKIE[$_GET['origin']])) {
+			//$_SESSION[$_GET['origin']]['mute'] = 'mute';
+			//$_SESSION[$_GET['origin']]['time'] = 9999999999;
+			setcookie($_GET['origin'].'[origin]',	$_GET['origin'],		time()+31536000);
+			setcookie($_GET['origin'].'[time]', 	time()+31536000,		time()+31536000);
+			setcookie($_GET['origin'].'[mute]',		'mute',					time()+31536000);
+			//setcookie($_GET['origin'].'[time]', '' , time()+3600);
 		}
 	} elseif($_GET["mute"] == 'all') {
-			$_SESSION['mute'] = 'all';
+			//$_SESSION['mute'] = 'all';
+			setcookie('mute',						'all',					time()+31536000);
 	} elseif($_GET["mute"] == 'reset') {
-			unset($_SESSION['mute']);
+			//unset($_COOKIE['mute']);
+			setcookie('mute',						"",						time());
 	}
 }
 		
@@ -143,7 +136,7 @@ if (!in_array($sort, array('desc', 'asc'))) {
 
 $sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.name = t.origin LEFT JOIN settings_area r ON r.area_id = t.routemanager ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
 
-echo '<table><tr>';
+echo '<table><tr><td class="count" style="font-size:16px"><b>Count:</b></td>';
 foreach ($spalten as $spalte => $name) {
 	if(isset($_GET["spalte"]) and $_GET["spalte"] == $spalte) {
 		if($_GET["sort"] == 'asc') {
@@ -178,9 +171,11 @@ while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
 	$next_seconds = $row["currentSleepTime"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
 	} else {
 	
+		$next_months = floor($next_seconds / (3600*24*30));
+        $next_day = floor($next_seconds / (3600*24));
         $next_hours = floor($next_seconds / 3600);
         $next_mins = floor(($next_seconds - ($next_hours*3600)) / 60);
         $next_secs = floor($next_seconds % 60);
@@ -206,23 +201,26 @@ while($row = $sql->fetch_array()) {
         $secs = floor($seconds % 60);
 		
 		if($seconds < 60) {
-            $time = $secs." sec ago";
+            $time = "$secs sec ago";
         } else if($seconds < 60*60 ) {
 			if($seconds > $wartime + $next_seconds) {
-            	$time = "<span class=\"warn\">".$mins." min ago</span>";
+            	$time = "<span class=\"warn\">$mins min ago</span>";
 			} else {
-				$time = $mins." min ago";
+				$time = "$mins min ago";
 			}
         } else if($seconds < 24*60*60) {
+			$out_hours = ($hours > 1 ? 'hours' : 'hour');
 			if($seconds > $wartime + $next_seconds) {
-            	$time = "<span class=\"warn\">".$hours." hours ago</span>";
+            	$time = "<span class=\"warn\">$hours $out_hours ago</span>";
 			} else {
-				$time = $hours." hours ago";
+				$time = "$hours $out_hours ago";
 			}
         } else if($seconds > 24*60*60) {
-            $time = $day." day ago";
+			$out_day = ($day > 1 ? 'days' : 'day');
+            $time = "$day $out_day ago";
         } else if($seconds > 30*24*60*60) {
-            $time = $months." month ago";
+			$out_months = ($months > 1 ? 'months' : 'month');
+            $time = "$months $out_months ago";
 		}
 		
 		$cooldown = $offline * 60 + $next_seconds;
@@ -233,27 +231,38 @@ while($row = $sql->fetch_array()) {
 		} elseif($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $cooldown seconds"))) {
 			$status = 'offline';
 			$background = '#FFFF99';
-				if(!isset($_SESSION[$origin])) {
+				if(!isset($_COOKIE[$origin])) {		// none cookie
 					//if($i == 1) {
-						if(!isset($_SESSION[$origin]['mute']) && !isset($_SESSION['mute'])) {
+						if(!isset($_COOKIE[$origin]['mute']) && !isset($_COOKIE['mute'])) {
 							echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
-							$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
-							$i++;
+							//$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
+							//setcookie("TestCookie", $value, time()+3600);
+							setcookie($origin.'[origin]',	$origin,	time()+$notify);
+							setcookie($origin.'[time]',		time()+$notify,		time()+$notify);
+							//$i++;
 						}
 					//}
-				} elseif($_SESSION[$origin]["time"] < time()-$notify) {
-					unset($_SESSION[$origin]);
+				} elseif($_COOKIE[$origin]["time"] < time()-$notify && !isset($_COOKIE['mute'])) {
+					//unset($_SESSION[$origin]);
+					setcookie($origin, "", time()-3600);
 				}
 		} else {
 			$status = 'online';
 			$background = '#66CC66';
-			if(isset($_SESSION[$origin])) {
-				unset($_SESSION[$origin]);
+			if(isset($_COOKIE[$origin])) {
+				//unset($_SESSION[$origin]);
+				//setcookie($origin,	"",			time()-3600);
+				
+				setcookie($origin.'[origin]',	$origin,	time()-3600);
+				setcookie($origin.'[time]',		time(),		time()-3600);
+				if(isset($_COOKIE[$origin]['mute'])) {
+					setcookie($origin.'[mute]',	"",			time()-3600);
+				}
 			}
 		}
 
-		if($status == 'offline') {
-			if(isset($_SESSION[$origin]['mute']) == 'mute') {
+		if($status == 'offline' && !isset($_COOKIE['mute'])) {
+			if(isset($_COOKIE[$origin]['mute'])) {
 				if(isset($_SESSION["sort"])) {
 					$mute = '<a href="'.$sortIndex.'&mute=off&origin='.$origin.'">'.$origin.' &#128263;</a>';
 				} else {
@@ -266,18 +275,28 @@ while($row = $sql->fetch_array()) {
 					$mute = '<a href="?mute=on&origin='.$origin.'">'.$origin.'</a>';
 				}
 			}
+		} elseif(isset($_COOKIE['mute'])) {
+			$mute = $origin.' &#128263';
 		} else {
 			$mute = $origin;
 		}
-
-		echo "<tr style=\"background:".$background."\"><td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
-	}
+		
+		if($status == 'offline' && isset($_COOKIE[$origin]['time'])) {
+			$timer = "<td class=\"count\" style=\"font-size:12px\" id=\"javascript-timer-".$i."\">".($_COOKIE[$origin]['time'] - time() + $notify)."</td>";
+		} else {
+			$timer = '<td class="count"></td>';
+		}
+		echo "<tr style=\"background:".$background."\">$timer<td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
+	} $i++;
 }
 echo '</table>';
 
-//echo '<pre>';
-//print_r($_SESSION);
-//echo '</pre>';
+
+echo 'currently: '.time();
+echo '<pre>';
+print_r($_COOKIE);
+echo '</pre>';
+
 ?>
 <script type="text/javascript">
 var i = <?=$reload?>;
@@ -289,10 +308,64 @@ var i = <?=$reload?>;
     }, 1000);
 })();
 </script>
+
+        <script type="text/javascript">
+            // singleton timer
+            var Timer = new function()
+            {
+                // store all instances here
+                this.instances = [];
+            
+                // init with id, current init time and destination time
+                // init time needed to synchronize clock (server-side/client-side)
+                this.init = function(id, initTime, destTime)
+                {
+                    this.instances[id] = {
+                        "iv"   : setTimeout("Timer.countdown('" + id + "')", 5), // set interval did not work properly
+                        "rest" : destTime - initTime}; // we are just counting down
+                }
+                
+                this.countdown = function(id)
+                {
+                    if (this.instances[id].rest > 0) {
+                        setTimeout("Timer.countdown('" + id + "')", 1000); // new timeout
+                    }
+                    this.display(id, this.instances[id].rest); // call display function
+                    --this.instances[id].rest; // decrement
+                }
+                
+                this.display = function(id, seconds)
+                {
+                    // display what ever you like
+                    document.getElementById(id).innerHTML = seconds;
+                }
+            }
+        
+            function init()
+            {
+                // look after timer init (needed for time synchronisation)
+                if (typeof document.getElementById("javascript-timer-init") != "undefined") {
+                    var initTime = document.getElementById("javascript-timer-init").innerHTML;
+                    var i = 1, e;
+                    // increment "i" index, if not found, stop loop
+                    while (document.getElementById("javascript-timer-" + i)) {
+                        e = document.getElementById("javascript-timer-" + i);
+                        var destTime = e.innerHTML;
+                        // init timer with id, init time and destination time
+                        Timer.init("javascript-timer-" + i, initTime, destTime);
+                        ++i;
+                    }
+                }
+            }
+            
+            // TODO use a better onload event
+            window.onload = init;
+        </script>
+
 <h4 style="margin-top:20px; text-align:center">reload in <?=$reload?></h4>
 <div style="margin-top:20px; text-align:center">
 <?php
-if(!isset($_SESSION["mute"]) == 'all') {
+if(!isset($_COOKIE["mute"]) == 'all') {
 	if(isset($_SESSION["sort"])) {
 		echo '<a href="'.$sortIndex.'&mute=all">&#128264;</a> | ';
 	} else {
@@ -306,7 +379,7 @@ if(!isset($_SESSION["mute"]) == 'all') {
 	}
 }
 ?>
-	<a href="mad_devices.php?reset=1">reset notify &amp; sorting</a>
+	<a href="mad_devices_cookie.php?reset=1">reset notify &amp; sorting</a>
 </div>
 </body>
 </html>
