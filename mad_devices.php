@@ -379,7 +379,7 @@ if(!isset($_COOKIE["mute"]) == 'all') {
 	}
 }
 ?>
-	<a href="mad_devices_cookie.php?reset=1">reset notify &amp; sorting</a>
+	<a href="mad_devices.php?reset=1">reset notify &amp; sorting</a>
 </div>
 </body>
 </html>
