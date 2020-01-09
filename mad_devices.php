@@ -8,6 +8,8 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$sortIndex = $_SESSION["sort"];
 } elseif(isset($_SESSION["sort"])) {
 	$sortIndex = $_SESSION["sort"];
+} else {
+	$sortIndex = '';
 }
 
 ?>
