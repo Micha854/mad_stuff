@@ -294,10 +294,10 @@ while($row = $sql->fetch_array()) {
 echo '</table>';
 
 
-echo 'currently: '.time();
-echo '<pre>';
-print_r($_COOKIE);
-echo '</pre>';
+//echo 'currently: '.time();
+//echo '<pre>';
+//print_r($_COOKIE);
+//echo '</pre>';
 
 ?>
 <script type="text/javascript">
