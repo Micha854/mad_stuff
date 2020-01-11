@@ -12,75 +12,6 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$sortIndex = '';
 }
 
-?>
-<!doctype html>
-<html lang="de">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url?>">
-<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex?>">
-<title>MAD - Devices</title>
-<style type="text/css">
-* {
-    margin: 0;
-    padding: 0;
-}
-
-table {
-    width:<?=$breite?>
-}
-  
-td {
-padding-left:5px;
-padding-right:5px;
-line-height:160%;
-border-collapse: collapse
-}
-
-table {
-border-collapse: collapse
-}
-
-a:link, a:visited {
-color: Royalblue;
-text-decoration: None;
-}
-
-a:hover, a:active {
-color: Red;
-}
-
-#active {
-color: #FF0000;
-}
-
-.warn {
-background:#FFFF99
-}
-
-@media only screen and (max-width: 550px) {
-  table {
-    width:100%
-  }
-  <?php if($pos == 0) { ?> .pos { display: none} <?php } ?>
-  <?php if($count == 0) { ?> .count { display: none} <?php } ?>
-}
-
-@media only screen and (min-width: 550px) {
-  html {
-    font-size:<?=$size?>
-  }
-  .mobile {
-  	display:none
-  }
-}
-</style>
-
-</head>
-<body>
-<div id="javascript-timer-init" style="display:none"><?=$notify?></div>
-<?php
 $mysqli = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
 if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
@@ -138,7 +69,7 @@ if (!in_array($sort, array('desc', 'asc'))) {
 
 $sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.name = t.origin LEFT JOIN settings_area r ON r.area_id = t.routemanager ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
 
-echo '<table><tr><td class="count" style="font-size:16px"><b>Count:</b></td>';
+$ausgabe = '<table><tr><td class="count" style="font-size:16px"><b>Count:</b></td>';
 foreach ($spalten as $spalte => $name) {
 	if(isset($_GET["spalte"]) and $_GET["spalte"] == $spalte) {
 		if($_GET["sort"] == 'asc') {
@@ -154,26 +85,27 @@ foreach ($spalten as $spalte => $name) {
 	}
 	
 	if($spalte == 't.routePos') {
-		echo '<td class="pos">' .
+		$ausgabe .= '<td class="pos">' .
 		ucfirst($name) .
 		'<a href="?spalte=' . $spalte . '&sort=asc" '.$active.' title="Aufsteigend sortieren">&#9650;</a>' .
 		'<a href="?spalte=' . $spalte . '&sort=desc" '.$active2.' title="Absteigend sortieren">&#9660;</a>' .
 		'</td>';
 	} else {
-		echo '<td>' .
+		$ausgabe .= '<td>' .
 		ucfirst($name) .
 		'<a href="?spalte=' . $spalte . '&sort=asc" '.$active.' title="Aufsteigend sortieren">&#9650;</a>' .
 		'<a href="?spalte=' . $spalte . '&sort=desc" '.$active2.' title="Absteigend sortieren">&#9660;</a>' .
 		'</td>';
 	}
 }
-echo '</tr>';
+$ausgabe .= '</tr>';
+$audio = '';
 $i = 1;
 while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
 	$next_seconds = $row["currentSleepTime"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		echo "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
+		$ausgabe .= "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
 	} else {
 	
 		$next_months = floor($next_seconds / (3600*24*30));
@@ -236,7 +168,7 @@ while($row = $sql->fetch_array()) {
 				if(!isset($_COOKIE[$origin])) {		// none cookie
 					//if($i == 1) {
 						if(!isset($_COOKIE[$origin]['mute']) && !isset($_COOKIE['mute'])) {
-							echo "<audio autoplay height=\"0\" width=\"0\"><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
+							$audio .= "<audio autoplay><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
 							//$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
 							//setcookie("TestCookie", $value, time()+3600);
 							setcookie($origin.'[origin]',	$origin,	time()+$notify);
@@ -288,10 +220,91 @@ while($row = $sql->fetch_array()) {
 		} else {
 			$timer = '<td class="count"></td>';
 		}
-		echo "<tr style=\"background:".$background."\">$timer<td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
+		$ausgabe .= "<tr style=\"background:".$background."\">$timer<td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
 	} $i++;
 }
-echo '</table>';
+$mysqli->close();
+
+?>
+
+
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex?>">
+<title>MAD - Devices</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    width:<?=$breite?>
+}
+  
+td {
+padding-left:5px;
+padding-right:5px;
+line-height:160%;
+border-collapse: collapse
+}
+
+table {
+border-collapse: collapse
+}
+
+a:link, a:visited {
+color: Royalblue;
+text-decoration: None;
+}
+
+a:hover, a:active {
+color: Red;
+}
+
+#active {
+color: #FF0000;
+}
+
+.warn {
+background:#FFFF99
+}
+
+@media only screen and (max-width: 550px) {
+  table {
+    width:100%
+  }
+  <?php if($pos == 0) { ?> .pos { display: none} <?php } ?>
+  <?php if($count == 0) { ?> .count { display: none} <?php } ?>
+}
+
+@media only screen and (min-width: 550px) {
+  html {
+    font-size:<?=$size?>
+  }
+  .mobile {
+  	display:none
+  }
+}
+</style>
+
+</head>
+<body>
+<div id="javascript-timer-init" style="display:none"><?=$notify?></div>
+
+<?php
+
+//if(isset($audio)) {
+//	for($n=1; $n < $i; $n++) {
+		echo $audio;
+//	}
+//}
+
+echo $ausgabe . '</table>';
+
 
 
 //echo 'currently: '.time();
@@ -300,7 +313,7 @@ echo '</table>';
 //echo '</pre>';
 
 ?>
-<script type="text/javascript">
+<script>
 var i = <?=$reload?>;
 (function timer(){
     if (--i < 0) return;
@@ -309,9 +322,7 @@ var i = <?=$reload?>;
         timer();
     }, 1000);
 })();
-</script>
 
-        <script type="text/javascript">
             // singleton timer
             var Timer = new function()
             {
@@ -381,7 +392,7 @@ if(!isset($_COOKIE["mute"]) == 'all') {
 	}
 }
 ?>
-	<a href="mad_devices.php?reset=1">reset notify &amp; sorting</a>
+<a href="mad_devices.php?reset=1">reset notify &amp; sorting</a>
 </div>
 </body>
 </html>
