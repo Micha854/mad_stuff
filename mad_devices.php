@@ -18,6 +18,15 @@ if ($mysqli->connect_error) {
 }
 
 if(isset($_GET["reset"]) == '1') {
+	$sql = $mysqli->query("SELECT origin FROM trs_status");
+	while($reset = $sql->fetch_array()) {
+		setcookie($reset["origin"].'[origin]', $reset["origin"], time()-3600);
+		setcookie($reset["origin"].'[time]', time(), time()-3600);
+		if(isset($_COOKIE[$reset["origin"]]['mute'])) {
+			setcookie($reset["origin"].'[mute]', "", time()-3600);
+		}
+	}
+	setcookie('mute', "", time());
 	session_destroy();
 	header("Location: ".$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
 	exit;
@@ -39,6 +48,10 @@ if(isset($_GET["mute"])) {
 			setcookie($_GET['origin'].'[time]', 	time()+31536000,		time()+31536000);
 			setcookie($_GET['origin'].'[mute]',		'mute',					time()+31536000);
 			//setcookie($_GET['origin'].'[time]', '' , time()+3600);
+		} else {
+			setcookie($_GET['origin'].'[origin]',	$_GET['origin'],		time()+31536000);
+			setcookie($_GET['origin'].'[time]', 	time()+31536000,		time()+31536000);
+			setcookie($_GET['origin'].'[mute]',		'mute',					time()+31536000);
 		}
 	} elseif($_GET["mute"] == 'all') {
 			//$_SESSION['mute'] = 'all';
@@ -105,7 +118,7 @@ while($row = $sql->fetch_array()) {
 	$origin = $row["origin"];
 	$next_seconds = $row["currentSleepTime"];
 	if($row["lastProtoDateTime"] == NULL ) {
-		$ausgabe .= "<tr style=\"background:#FF6666\"><td>".$origin."</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td>";
+		$ausgabe .= "<tr style=\"background:#FF6666\"><td class='count'></td><td>".$origin."</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
 	} else {
 	
 		$next_months = floor($next_seconds / (3600*24*30));
@@ -196,7 +209,15 @@ while($row = $sql->fetch_array()) {
 		}
 
 		if($status == 'offline' && !isset($_COOKIE['mute'])) {
-			if(isset($_COOKIE[$origin]['mute'])) {
+			if(isset($_COOKIE['mute']) or isset($_GET['mute']) && $_GET['mute'] == 'all') {
+				$mute = $origin.' &#128263';
+			} elseif(isset($_GET["mute"]) && ($_GET["mute"] == 'off' && isset($_GET["origin"]) && $_GET["origin"] == $origin)) {
+				if(isset($_SESSION["sort"])) {
+					$mute = '<a href="'.$sortIndex.'&mute=on&origin='.$origin.'">'.$origin.'</a>';
+				} else {
+					$mute = '<a href="?mute=on&origin='.$origin.'">'.$origin.'</a>';
+				}
+			} elseif(isset($_COOKIE[$origin]['mute']) or isset($_GET["mute"]) && ($_GET["mute"] == 'on') && isset($_GET["origin"]) && ($_GET["origin"] == $origin)) {
 				if(isset($_SESSION["sort"])) {
 					$mute = '<a href="'.$sortIndex.'&mute=off&origin='.$origin.'">'.$origin.' &#128263;</a>';
 				} else {
@@ -209,7 +230,9 @@ while($row = $sql->fetch_array()) {
 					$mute = '<a href="?mute=on&origin='.$origin.'">'.$origin.'</a>';
 				}
 			}
-		} elseif(isset($_COOKIE['mute'])) {
+		} elseif(isset($_GET['mute']) && ($_GET['mute'] == 'reset')) {
+			$mute = $origin;
+		} elseif(isset($_COOKIE['mute']) or isset($_GET['mute']) && $_GET['mute'] == 'all') {
 			$mute = $origin.' &#128263';
 		} else {
 			$mute = $origin;
@@ -239,6 +262,10 @@ $mysqli->close();
 * {
     margin: 0;
     padding: 0;
+}
+
+html {
+background:#FAFAFA
 }
 
 table {
@@ -299,7 +326,9 @@ background:#FFFF99
 
 //if(isset($audio)) {
 //	for($n=1; $n < $i; $n++) {
+	if(!isset($_GET['mute'])) {
 		echo $audio;
+	}
 //	}
 //}
 
@@ -378,7 +407,19 @@ var i = <?=$reload?>;
 <h4 style="margin-top:20px; text-align:center">reload in <?=$reload?></h4>
 <div style="margin-top:20px; text-align:center">
 <?php
-if(!isset($_COOKIE["mute"]) == 'all') {
+if(isset($_GET['mute']) && $_GET['mute'] == 'reset') {
+	if(isset($_SESSION["sort"])) {
+		echo '<a href="'.$sortIndex.'&mute=all">&#128264;</a> | ';
+	} else {
+		echo '<a href="?mute=all">&#128264;</a> | ';
+	}
+} elseif(!isset($_COOKIE["mute"]) == 'all' and !isset($_GET['mute'])) {
+	if(isset($_SESSION["sort"])) {
+		echo '<a href="'.$sortIndex.'&mute=all">&#128264;</a> | ';
+	} else {
+		echo '<a href="?mute=all">&#128264;</a> | ';
+	}
+} elseif(isset($_GET['mute']) && ($_GET['mute'] == 'on' or $_GET['mute'] == 'off')) {
 	if(isset($_SESSION["sort"])) {
 		echo '<a href="'.$sortIndex.'&mute=all">&#128264;</a> | ';
 	} else {
