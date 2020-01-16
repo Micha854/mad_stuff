@@ -18,7 +18,7 @@ if ($mysqli->connect_error) {
 }
 
 if(isset($_GET["reset"]) == '1') {
-	$sql = $mysqli->query("SELECT origin FROM trs_status");
+	$sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id");
 	while($reset = $sql->fetch_array()) {
 		setcookie($reset["origin"].'[origin]', $reset["origin"], time()-3600);
 		setcookie($reset["origin"].'[time]', time(), time()-3600);
@@ -80,7 +80,7 @@ if (!in_array($sort, array('desc', 'asc'))) {
 	$sort = 'asc'; // Default-Wert
 }
 
-$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.name = t.origin LEFT JOIN settings_area r ON r.area_id = t.routemanager ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
+$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id ORDER BY " . $spalte . " " . $sort .", origin ".$sort);
 
 $ausgabe = '<table><tr><td class="count" style="font-size:16px"><b>Count:</b></td>';
 foreach ($spalten as $spalte => $name) {
