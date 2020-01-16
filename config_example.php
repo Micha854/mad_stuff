@@ -1,7 +1,7 @@
 <?php
+// Debugging
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
-
 
 // mapadroid database
 $dbHost     = "localhost";	// host
@@ -9,6 +9,8 @@ $dbUsername = "DB-USER";	// Username
 $dbPassword = "PASSWORD";	// Password
 $dbName     = "DATABASE";	// Database
 
+
+// CONFIG ***** WORKER STATUS PAGE **************************************************************
 $url	= 'https';		// "http" or "https"
 
 $reload = 30;		  // reload page in seconds
@@ -21,4 +23,8 @@ $notify = 1200;		  // bei offline erneute Benachrichtigung nach 20 Minuten
 $breite	= '100%';	  // tabellenbreite, angabe in % oder px
 $size	= '26px';	  // font-size in px or pt | not work on mobile
 $pos	= 1;		  // Route Pos auf der mobilen Version anzeigen = 1 oder ausblenden = 0
-$count	= 0;		  // notification counter in mobile page?
+$count	= 0;		  // counter of notification in mobile page
+
+// CONFIG ***** WORKER IV LIST MANAGER **********************************************************
+
+$instance_id = 1;	  // instance ID of Madmin, default=1

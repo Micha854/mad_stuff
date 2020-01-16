@@ -61,7 +61,7 @@ if(isset($_GET["route"])) {
 	echo '<a href="mad_set.php"><h1>back</h1></a>';
 	echo '<h3>routefile of: <i>'.$_GET["name"].'</i> | <span style="background:#FFFF00;padding:5px">[]</span> for recalc with "python3 start.py -or" !!</h3>';
 	echo '<form action="" method="post">';
-	echo '<textarea name="route" cols="220" rows="45">'.$name["routefile"].'</textarea><br />';
+	echo '<textarea name="route" cols="220" rows="45" style="max-width:100%">'.$name["routefile"].'</textarea><br />';
 	echo '<p><input type="submit" name="newroute" value="routecalc ändern!" /></p>';
 	echo '</form>';
 	exit();
@@ -77,7 +77,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 	$ivlist = explode(',',$list);
 	$ivlist = array_map('trim', $ivlist);
 	
-	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = '1', name = '".$name."' ";
+	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = '".$instance_id."', name = '".$name."' ";
 	
 	if($insert_name = $mysqli->query($insert_name)) {
 		
@@ -94,7 +94,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 		echo '<h1 style="background:#009900">save</h1>';
 	}
 } else {
-	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>routecalc</b></td><td><b>last change</b></td></tr>';
+	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>calc</b></td><td><b>last change</b></td></tr>';
 	$sql_p = $mysqli->query("SELECT q.routecalc_id, p.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_pokestops p	ON p.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = p.area_id WHERE p.area_id IS NOT NULL ");
 	$sql_m = $mysqli->query("SELECT q.routecalc_id, m.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm m	ON m.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = m.area_id WHERE m.area_id IS NOT NULL ");
 	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_iv_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL ");
@@ -138,7 +138,14 @@ if($anzahl != 0) {
 	$ep = "</p>";
 }
 ?>
-<style type="text/css">
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<title>MAD - IV List Manager</title>
+<style>
 .p {
 background: #FF9966
 }
@@ -152,17 +159,32 @@ background: #FF6633
 background: #99CC00
 }
 td {
-padding-left:10px;
-padding-right:10px;
+padding-left:2px;
+padding-right:2px;
 line-height:160%;
 border-collapse: collapse
 }
 table {
 border-collapse: collapse
 }
+
+.navbar{
+    min-height:17px;
+}
+
+.navbar-brand {
+	font-size:16.2px
+}
+
+.navbar  a {
+    font-size: 14.2px;
+}
 </style>
-<div style="float:left">
-<h3>Iv Listen anzeigen/ anlegen</h3>
+</head>
+<body>
+
+<div style="float:left; padding:10px">
+<h3>Iv Listen anzeigen / anlegen</h3>
 <?php 
 if(isset($sp)) {
 	echo $sp.$monlists.$ep;
@@ -170,12 +192,43 @@ if(isset($sp)) {
 ?>
 <form action="" method="post">
 monlist Name:<br /><input type="text" name="name" size="20" /><br />
-list of ids:<br /><textarea name="idlist" cols="80" rows="20" placeholder="1,2,3,4,11"></textarea><br />
+list of ids:<br /><textarea name="idlist" cols="80" rows="20" style="width:100%" placeholder="1,2,3,4,11"></textarea><br />
 <p><input type="submit" name="submit" value="Liste anlegen" /></p>
 </form>
 </div>
 
 <?php
 if(isset($tbl)) { ?>
-	<div style="float:left; margin-left:50px"><h3>Routecalc finden</h3><?=$tbl.$out.$end ?></div>
+	<div style="float:left; max-width:100%; padding-top:15px"><h3 style="padding-left:10px">Routecalc finden</h3><?=$tbl.$out.$end ?></div>
+	<div style="clear:both; padding-top:50px">&nbsp;</div>
 <?php } ?>
+
+	<nav class="navbar py-0 fixed-bottom navbar-expand-md navbar-light" style="background-color:#E6E6E6">
+      <span class="navbar-brand">IV Manager</span>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item dropup">
+            <a class="nav-link dropdown-toggle" href="index.php" id="dropdown10" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Worker Status</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown10">
+			  <a class="dropdown-item" href="index.php?reset=1">Reset Settings</a>
+			  <a class="dropdown-item" href="index.php">Worker Status Page</a>
+            </div>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="mad_set.php">IV List Manager</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="mad_stats.php">Worker Statistik</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
