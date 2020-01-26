@@ -26,7 +26,7 @@ cleanupDbEntryOlderThan = 14         # in days, Deleting entries from destdb old
 def connect_sourcedb(): 
     connectionSourceDB = pymysql.connect(host='localhost',
                              user='mapadroid',
-                             password='2dhc1@4Q',
+                             password='xxxxxxxx',
                              db='mapadroid',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -35,7 +35,7 @@ def connect_sourcedb():
 def connect_destdb(): 							 
     connectionDestDB = pymysql.connect(host='localhost',
                              user='dbadmin',
-                             password='!Db4651642!',
+                             password='xxxxxxxx',
                              db='device_stats',
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
