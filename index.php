@@ -409,7 +409,7 @@ echo $ausgabe . '</table>';
 				<a class="nav-link" href="mad_set.php">IV List Manager</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link disabled" href="mad_stats.php">Worker Statistik</a>
+				<a class="nav-link" href="mad_stats.php?date=<?=date("Y-m-d")?>">Worker Statistik</a>
 			</li>
 		</ul>
 	</div>
