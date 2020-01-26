@@ -75,10 +75,9 @@
                  @status := status 
             FROM device_stats.status
             JOIN (SELECT @status := NULL) init
-        WHERE origin = '$origin' AND createdate = '$date' ORDER BY time
+        WHERE origin = '$origin' AND createdate = '$date'
               ) a
-       WHERE a.changeonoff = 1 AND origin = '$origin' AND createdate = '$date'
-    ORDER BY a.time";
+       WHERE a.changeonoff = 1 AND origin = '$origin' AND createdate = '$date' ";
 
 
             $query = $mysqli->query($sql);
