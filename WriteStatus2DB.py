@@ -70,8 +70,10 @@ def calc_past_min_from_now(timedate):
     past_min_from_now = int(past_min_from_now)
     return past_min_from_now
 
-def check_online_offline_status(lastProtoDateTime):
-    if calc_past_min_from_now(lastProtoDateTime) < statusOfflineTimeout:
+def check_online_offline_status(lastProtoDateTime,currentSleepTime):
+    currentSleepTimeMin = currentSleepTime / 60
+    OfflineTimeout = statusOfflineTimeout + currentSleepTimeMin
+    if calc_past_min_from_now(lastProtoDateTime) < OfflineTimeout:
         return 1
     else:
         return 0
@@ -83,18 +85,12 @@ try:
         # Create new records
         try:
             connectionDestDB = connect_destdb()
-            i = 0
             with connectionDestDB.cursor() as cursor:
                 for entry in check_status_table_from_sourcedb():
-                    if check_status_table_from_sourcedb()[i]['currentSleepTime'] > 0:
-                        #print("Cooldown on " + check_status_table_from_sourcedb()[i]['origin'] + ":")
-                        #print(check_status_table_from_sourcedb()[i]['currentSleepTime'])
-
-                    save_data = "INSERT INTO `status`(`createdate`, `origin`, `status`, `time`) VALUES('{}','{}','{}','{}')".format(datetime.date.today(), entry["origin"], check_online_offline_status(entry["lastProtoDateTime"]), entry["lastProtoDateTime"])
+                    save_data = "INSERT INTO `status`(`createdate`, `origin`, `status`, `time`) VALUES('{}','{}','{}','{}')".format(datetime.date.today(), entry["origin"], check_online_offline_status(entry["lastProtoDateTime"], entry["currentSleepTime"]), entry["lastProtoDateTime"])
                     cursor.execute(save_data)
                     # connection is not autocommit by default. So you must commit to save your changes.
                     connectionDestDB.commit()
-                    i = i + 1
         finally:
             print("new records done")
         
