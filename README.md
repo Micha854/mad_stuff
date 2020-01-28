@@ -13,7 +13,7 @@
 
 #### install
 
-create a sql table for chart data:
+create a sql table for chart data and put the name of the database on config file under [python] section:
 
 ```
 CREATE TABLE `status` (
@@ -29,6 +29,6 @@ ALTER TABLE `status`
 COMMIT;
 ```
 
-then config the WriteStatus2DB.py and start it!
+the python script must always run for the worker statistics to work correctly
 
 ![MAD-Devices](https://raw.githubusercontent.com/Micha854/mad_stuff/master/chart.png)
