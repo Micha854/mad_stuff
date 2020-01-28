@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once("config.php");
+$config = parse_ini_file("config.ini", TRUE);
 
 if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$_SESSION["sort"] = '?spalte='.$_GET["spalte"].'&sort='.$_GET["sort"];
@@ -12,7 +12,7 @@ if(isset($_GET["spalte"]) and isset($_GET["sort"])) {
 	$sortIndex = '';
 }
 
-$mysqli = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+$mysqli = new mysqli($config["mysql"]["dbHost"], $config["mysql"]["dbUsername"], $config["mysql"]["dbPassword"], $config["mapadroid"]["dbName"]);
 if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
@@ -28,7 +28,7 @@ if(isset($_GET["reset"]) == '1') {
 	}
 	setcookie('mute', "", time());
 	session_destroy();
-	header("Location: ".$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
+	header("Location: ".$config["option"]["url"]."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']);
 	exit;
 }
 
@@ -151,14 +151,14 @@ while($row = $sql->fetch_array()) {
 		if($seconds < 60) {
             $time = "$secs sec ago";
         } else if($seconds < 60*60 ) {
-			if($seconds > $wartime + $next_seconds) {
+			if($seconds > $config["option"]["wartime"] + $next_seconds) {
             	$time = "<span class=\"warn\">$mins min ago</span>";
 			} else {
 				$time = "$mins min ago";
 			}
         } else if($seconds < 24*60*60) {
 			$out_hours = ($hours > 1 ? 'hours' : 'hour');
-			if($seconds > $wartime + $next_seconds) {
+			if($seconds > $config["option"]["wartime"] + $next_seconds) {
             	$time = "<span class=\"warn\">$hours $out_hours ago</span>";
 			} else {
 				$time = "$hours $out_hours ago";
@@ -171,7 +171,7 @@ while($row = $sql->fetch_array()) {
             $time = "$months $out_months ago";
 		}
 		
-		$cooldown = $offline * 60 + $next_seconds;
+		$cooldown = $config["option"]["offline"] * 60 + $next_seconds;
 		
 		if($seconds < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds")) ) {
 			$status = 'online';
@@ -182,15 +182,15 @@ while($row = $sql->fetch_array()) {
 				if(!isset($_COOKIE[$origin])) {		// none cookie
 					//if($i == 1) {
 						if(!isset($_COOKIE[$origin]['mute']) && !isset($_COOKIE['mute'])) {
-							$audio .= "<audio autoplay><source src=\"".$beep."?i=".time()."\" type=\"audio/mpeg\"></audio>";
+							$audio .= "<audio autoplay><source src=\"".$config["option"]["beep"]."?i=".time()."\" type=\"audio/mpeg\"></audio>";
 							//$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
 							//setcookie("TestCookie", $value, time()+3600);
-							setcookie($origin.'[origin]',	$origin,	time()+$notify);
-							setcookie($origin.'[time]',		time()+$notify,		time()+$notify);
+							setcookie($origin.'[origin]',	$origin,	time()+$config["option"]["notify"]);
+							setcookie($origin.'[time]',		time()+$config["option"]["notify"],		time()+$config["option"]["notify"]);
 							//$i++;
 						}
 					//}
-				} elseif(isset($_COOKIE[$origin]["time"]) && $_COOKIE[$origin]["time"] < time()-$notify && !isset($_COOKIE['mute'])) {
+				} elseif(isset($_COOKIE[$origin]["time"]) && $_COOKIE[$origin]["time"] < time()-$config["option"]["notify"] && !isset($_COOKIE['mute'])) {
 					//unset($_SESSION[$origin]);
 					setcookie($origin, "", time()-3600);
 				} $o++;
@@ -240,11 +240,20 @@ while($row = $sql->fetch_array()) {
 		}
 		
 		if($status == 'offline' && isset($_COOKIE[$origin]['time'])) {
-			$timer = "<td class=\"count\" style=\"font-size:12px\" id=\"javascript-timer-".$i."\">".($_COOKIE[$origin]['time'] - time() + $notify)."</td>";
+			$timer = "<td class=\"count\" style=\"font-size:12px\" id=\"javascript-timer-".$i."\">".($_COOKIE[$origin]['time'] - time() + $config["option"]["notify"])."</td>";
 		} else {
 			$timer = '<td class="count"></td>';
 		}
-		$ausgabe .= "<tr style=\"background:".$background."\">$timer<td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$row["routeMax"]."</td><td>$time</td><td>$next</td>";
+		
+		if($row["routeMax"] >= 100) {
+			$maxRoute = '<span class="warn2">'. $row["routeMax"] . '</span>';
+		} elseif($row["routeMax"] >= 65) {
+			$maxRoute = '<span class="warn">'. $row["routeMax"] . '</span>';
+		} else {
+			$maxRoute = $row["routeMax"];
+		}
+		
+		$ausgabe .= "<tr style=\"background:".$background."\">$timer<td>".$mute."</td><td>".$row["name"]."</td><td class='pos'>".$row["routePos"]."/".$maxRoute."</td><td>$time</td><td>$next</td>";
 	} $i++;
 }
 $mysqli->close();
@@ -285,7 +294,7 @@ $o_title = ($o > 0 ? " ($o)" : '');
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="<?=$reload?>; URL=<?=$url."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex?>">
+<meta http-equiv="refresh" content="<?=$config["option"]["reload"]?>; URL=<?=$config["option"]["url"]."://".$_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex?>">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <title>MAD - Worker Status <?=$o_title?></title>
 <style>
@@ -300,7 +309,7 @@ font-size:15px
 }
 
 table {
-    width:<?=$breite?>
+    width:<?=$config["option"]["breite"]?>
 }
   
 td {
@@ -331,17 +340,21 @@ color: #FF0000;
 background:#FFFF99
 }
 
+.warn2 {
+background:#FF6666
+}
+
 @media only screen and (max-width: 550px) {
   table {
     width:100%
   }
-  <?php if($pos == 0) { ?> .pos { display: none} <?php } ?>
-  <?php if($count == 0) { ?> .count { display: none} <?php } ?>
+  <?php if($config["option"]["pos"] == 0) { ?> .pos { display: none} <?php } ?>
+  <?php if($config["option"]["count"] == 0) { ?> .count { display: none} <?php } ?>
 }
 
 @media only screen and (min-width: 550px) {
   .output {
-    font-size:<?=$size?>
+    font-size:<?=$config["option"]["size"]?>
   }
   .mobile {
   	display:none
@@ -367,7 +380,7 @@ background:#FAFAFA
 
 </head>
 <body>
-<div id="javascript-timer-init" style="display:none"><?=$notify?></div>
+<div id="javascript-timer-init" style="display:none"><?=$config["option"]["notify"]?></div>
 <div class="output">
 <?php
 
@@ -392,7 +405,7 @@ echo $ausgabe . '</table>';
 </div>
 
 <nav class="navbar py-0 fixed-bottom navbar-expand-md navbar-light" style="background-color:#E6E6E6">
-	<span class="navbar-brand">Worker Status <span class="reload">(<?=$reload?>)</span> <span class="notify"><?=$set_notify?></span></span>
+	<span class="navbar-brand">Worker Status <span class="reload">(<?=$config["option"]["reload"]?>)</span> <span class="notify"><?=$set_notify?></span></span>
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
 	</button>
@@ -416,7 +429,7 @@ echo $ausgabe . '</table>';
 </nav>
 	
 <script>
-var i = <?=$reload?>;
+var i = <?=$config["option"]["reload"]?>;
 (function timer(){
     if (--i < 0) return;
     setTimeout(function(){

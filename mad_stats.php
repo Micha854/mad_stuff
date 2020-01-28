@@ -57,20 +57,26 @@
 
         <?php
         require_once("config.php");
+		$config = parse_ini_file("config.ini", TRUE);
 
-        error_reporting(0);
-
-        $mysqli = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+		error_reporting(0);
+		
+		$mysqli = new mysqli($config["mysql"]["dbHost"], $config["mysql"]["dbUsername"], $config["mysql"]["dbPassword"], $config["mapadroid"]["dbName"]);
         if ($mysqli->connect_error) {
             die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
         }
 
-        $date = $_GET["date"];
+        if(isset($_GET["date"])) {
+			$date = $_GET["date"];
+		} else {
+			$date = date("Y-m-d");
+		}
         $dateOut = date("d.m.y", strtotime($date));
         $num = 0;
         $chart = 1;
+		$order_devices = $config["option"]["order"];
 
-        $all_devices = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id WHERE NOT d.name = 'test'");
+        $all_devices = $mysqli->query("SELECT d.name AS origin, d.device_id as id FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id ORDER BY $order_devices");
         while ($device = $all_devices->fetch_array()) {
 
             $origin = $device["origin"];

@@ -11,37 +11,41 @@ import time
 import datetime
 import pymysql.cursors
 import pymysql
+import configparser
 
-#########################################################################################################
-#########################################################################################################
-#
-# Configuration
-# 
-statusOfflineTimeout = 10            # in minutes, Device is offline when ProtoDate older then this value
-statusInterval = 30                  # in seconds, Fetching intervall for status
-cleanupDbEntryOlderThan = 14         # in days, Deleting entries from destdb older than configured days
-#
-# DB configuration
-#
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+host = config['mysql']['dbHost']
+user = config['mysql']['dbUsername']
+password = config['mysql']['dbPassword']
+
+db1 = config['mapadroid']['dbName']
+db2 = config['python']['dbName']
+
+passwd = password.replace('"','')
+ 
+statusOfflineTimeout = int(config['python']['offset'])
+statusInterval = int(config['python']['interval'])
+cleanupDbEntryOlderThan = int(config['python']['cleanup'])
+
 def connect_sourcedb(): 
-    connectionSourceDB = pymysql.connect(host='localhost',
-                             user='mapadroid',
-                             password='xxxxxxxx',
-                             db='mapadroid',
+    connectionSourceDB = pymysql.connect(host=host,
+                             user=user,
+                             password=passwd,
+                             db=db1,
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
     return connectionSourceDB
-#
+
 def connect_destdb(): 							 
-    connectionDestDB = pymysql.connect(host='localhost',
-                             user='dbadmin',
-                             password='xxxxxxxx',
-                             db='device_stats',
+    connectionDestDB = pymysql.connect(host=host,
+                             user=user,
+                             password=passwd,
+                             db=db2,
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
     return connectionDestDB						 
-#########################################################################################################
-#########################################################################################################
 
 def check_status_table_from_sourcedb():
     try:

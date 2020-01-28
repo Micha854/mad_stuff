@@ -1,11 +1,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <?php
-require_once("config.php");
+$config = parse_ini_file("config.ini", TRUE);
 
 
 
 // Create database mapadroid
-$mysqli = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+$mysqli = new mysqli($config["mysql"]["dbHost"], $config["mysql"]["dbUsername"], $config["mysql"]["dbPassword"], $config["mapadroid"]["dbName"]);
 if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
@@ -77,7 +77,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 	$ivlist = explode(',',$list);
 	$ivlist = array_map('trim', $ivlist);
 	
-	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = '".$instance_id."', name = '".$name."' ";
+	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = '".$config["option"]["instance_id"]."', name = '".$name."' ";
 	
 	if($insert_name = $mysqli->query($insert_name)) {
 		
