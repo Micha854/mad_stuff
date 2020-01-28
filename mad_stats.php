@@ -12,16 +12,27 @@
             .output {
                 float:left;
                 height:500px;
-                width:610px;
                 margin-left:0px;
-                margin-right:20px;
+                margin-right:0px;
                 padding-top:20px;
-                margin-bottom:65px;
-                border-right:#d0d0d0 2px solid;
-                border-left:#d0d0d0 2px solid;
-                border-top:#d0d0d0 2px solid;
+                margin-bottom:50px;
+                border-right:#d0d0d0 0px solid;
+                border-left:#d0d0d0 1px solid;
+                border-top:#d0d0d0 0px solid;
                 border-collapse: collapse
             }
+			
+			@media only screen and (min-width: 525px) {
+				.output {
+					width:33%;
+					min-width:525px;
+				}
+			}
+			@media only screen and (max-width: 525px) {
+				.output {
+					width:99%;
+				}
+			}
 
 .navbar{
     min-height:17px;
@@ -97,6 +108,10 @@
                 if (stripos($v[0], $date) === false) {
                     unset($myArray[$k]);
                 }
+				if($myArray[$k][0] == $myArray[$k+1][0]) {	// lösche gleiche datetime einträge !!
+					unset($myArray[$k]);
+					unset($myArray[$k+1]);
+				}
             }
             $myArray = array_values($myArray);
 //end filter
@@ -166,8 +181,17 @@
                         exportEnabled: true,
                         animationEnabled: true,
                         title: {
-                            text: "<?= $origin ?>"
+                            text: "<?= $origin ?>",
+							fontFamily: "tahoma",
+							fontSize: 26,
+							fontWeight: "bold"
                         },
+						subtitles:[{
+							text: "<?=$dateOut?>",
+							fontFamily: "tahoma",
+							fontSize: 12,
+							fontWeight: "Normal"
+						}],
                         legend: {
                             cursor: "pointer",
                             itemclick: explodePie<?= $chart ?>
@@ -221,7 +245,7 @@ for ($i = 1; $i < $chart; $i++) {
                 <span style="background:#FF6666; padding:2px">Offline: <?= $anteil_offline[$i - 1] ?>%</span><br>
                 <span style="background:#d0d0d0; padding:2px">None: <?= $anteil_none[$i - 1] ?>%</span></div>
 
-            <div style="padding-top:40px; width:100%; margin-left:-2px; margin-top:-22px; border-bottom: #d0d0d0 2px solid; border-right:#d0d0d0 2px solid; border-left:#d0d0d0 2px solid; border-collapse: collapse"></div>
+            <div style="padding-top:50px; width:100%; margin-left:-1px; margin-top:-22px; border-bottom: #d0d0d0 1px solid; border-right:#d0d0d0 0px solid; border-left:#d0d0d0 1px solid; border-collapse: collapse"></div>
         </div>
         <?php
     }
