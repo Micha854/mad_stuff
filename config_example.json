@@ -1,0 +1,35 @@
+{
+    "db": {
+        "dbHost":		"localhost",
+        "dbUsername":	"DB-USER",
+        "dbPassword":	"DB-PASSWORD"
+    },
+	
+	"database": {
+		"mapadroid":	"mapadroid",
+		"stats":		"device_stats"
+	},
+	
+	"py-option": {
+		"timeout":		10,				"_comment": "in minutes, Device is offline when ProtoDate older then this value",
+		"interval":		60,				"_comment": "in seconds, Fetching intervall for status",
+		"cleanup":		14,				"_comment": "in days, Deleting entries from destdb older than configured days"
+	},
+	
+	"option": {
+		"url":			"https",
+		"beep":			"beep.mp3",		"_comment": "mp3 sound file",
+		"order":		"origin",		"_comment": "order the devices on stats [id,origin]",
+		"breite":		"100%",			"_comment": "table width in % or px",
+		"size":			"22px",			"_comment": "font-size in px or pt | not work on mobil, only for desktop",
+		
+		"route":		0,				"_comment": "warn if routes are too long, route >= 100 red && route >=65 yellow",
+		"reload":		1,				"_comment": "reload page in seconds, for live data view use 1 second",
+		"wartime":		180,			"_comment": "warning time in seconds (display)",
+		"timeout":		10,				"_comment": "offline timeout in minutes, set device offline and give notify",
+		"notify":		1200,			"_comment": "repeat notification in seconds",
+		"pos":			1,				"_comment": "Route Pos show on mobile Version",
+		"count":		0,				"_comment": "counter of notification in mobile page",
+		"instance_id":	1,				"_comment": "instance ID of Madmin"
+	}
+}

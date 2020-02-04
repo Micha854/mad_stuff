@@ -11,38 +11,30 @@ import time
 import datetime
 import pymysql.cursors
 import pymysql
-import configparser
+import json
 
-config = configparser.ConfigParser()
-config.read('config.ini')
+with open('config.json') as file:
+    data = json.load(file)
+#print(json.dumps(data, indent=4))
 
-host = config['mysql']['dbHost']
-user = config['mysql']['dbUsername']
-password = config['mysql']['dbPassword']
-
-db1 = config['mapadroid']['dbName']
-db2 = config['python']['dbName']
-
-passwd = password.replace('"','')
- 
-statusOfflineTimeout = int(config['python']['offset'])
-statusInterval = int(config['python']['interval'])
-cleanupDbEntryOlderThan = int(config['python']['cleanup'])
+statusOfflineTimeout = data["py-option"]["timeout"]
+statusInterval = data["py-option"]["interval"]
+cleanupDbEntryOlderThan = data["py-option"]["cleanup"]
 
 def connect_sourcedb(): 
-    connectionSourceDB = pymysql.connect(host=host,
-                             user=user,
-                             password=passwd,
-                             db=db1,
+    connectionSourceDB = pymysql.connect(host=data["db"]["dbHost"],
+                             user=data["db"]["dbUsername"],
+                             password=data["db"]["dbPassword"],
+                             db=data["database"]["mapadroid"],
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
     return connectionSourceDB
 
 def connect_destdb(): 							 
-    connectionDestDB = pymysql.connect(host=host,
-                             user=user,
-                             password=passwd,
-                             db=db2,
+    connectionDestDB = pymysql.connect(host=data["db"]["dbHost"],
+                             user=data["db"]["dbUsername"],
+                             password=data["db"]["dbPassword"],
+                             db=data["database"]["stats"],
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
     return connectionDestDB						 

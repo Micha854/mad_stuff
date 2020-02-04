@@ -54,28 +54,43 @@
 
         </style>
 
-
         <?php
-        require_once("config.php");
-		$config = parse_ini_file("config.ini", TRUE);
+		$config = json_decode(file_get_contents('config.json'), true);
 
 		error_reporting(0);
 		
-		$mysqli = new mysqli($config["mysql"]["dbHost"], $config["mysql"]["dbUsername"], $config["mysql"]["dbPassword"], $config["mapadroid"]["dbName"]);
+		$mysqli = new mysqli($config["db"]["dbHost"], $config["db"]["dbUsername"], $config["db"]["dbPassword"], $config["database"]["mapadroid"]);
         if ($mysqli->connect_error) {
             die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
         }
-
-        if(isset($_GET["date"])) {
+		
+		$table	= $config["database"]["stats"];
+		$all_dates = $mysqli->query("SELECT createdate FROM $table.status GROUP BY createdate ORDER BY createdate DESC");
+		//var_dump($all_dates);
+		
+		if(isset($_GET["date"])) {
 			$date = $_GET["date"];
 		} else {
 			$date = date("Y-m-d");
 		}
+		
+		$form = '<form action="" method="get"><select name="date" onchange="this.form.submit()">';
+		
+			//echo '<option value="'.$date.'" selected>'. $date .'</option>';		
+		while ($dat = $all_dates->fetch_array()) {
+			$selected = $date == $dat["createdate"] ? 'selected' : '';
+			$form .= '<option value="'. $dat["createdate"] .'" '.$selected.'>'. $dat["createdate"] .'</option>';
+		}
+		
+		$form .= '</select></form>';
+		
+		echo '<div style="text-align:center">'.$form.'</div>';		
+        
         $dateOut = date("d.m.y", strtotime($date));
         $num = 0;
         $chart = 1;
 		$order_devices = $config["option"]["order"];
-
+		
         $all_devices = $mysqli->query("SELECT d.name AS origin, d.device_id as id FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id ORDER BY $order_devices");
         while ($device = $all_devices->fetch_array()) {
 
@@ -90,7 +105,7 @@
                  status,
                  @status IS NULL OR @status != status AS changeonoff,
                  @status := status 
-            FROM device_stats.status
+            FROM $table.status
             JOIN (SELECT @status := NULL) init
         WHERE origin = '$origin' AND createdate = '$date'
               ) a
@@ -111,10 +126,10 @@
 //filter out incorrect dates
             foreach ($myArray as $k => $v) {
                 //if entry date not equal to url date, delete entry
-                if (stripos($v[0], $date) === false) {
-                    unset($myArray[$k]);
-                }
-				if($myArray[$k][0] == $myArray[$k+1][0]) {	// lösche gleiche datetime einträge !!
+                //if (stripos($v[0], $date) === false) {
+                  //  unset($myArray[$k]);
+                //}
+				if($myArray[$k][0] == $myArray[$k+1][0]) {	// delete where datetime == datetime !!
 					unset($myArray[$k]);
 					unset($myArray[$k+1]);
 				}
@@ -246,11 +261,9 @@ for ($i = 1; $i < $chart; $i++) {
         <div class="output">
             <div id="chartContainer<?= $i ?>"></div>
             <div style="padding-top:450px; text-align:center">
-
-                <span style="background:#66CC66; padding:2px">Online: <?= $anteil_online[$i - 1] ?>%</span><br>
+				<span style="background:#66CC66; padding:2px">Online: <?= $anteil_online[$i - 1] ?>%</span><br>
                 <span style="background:#FF6666; padding:2px">Offline: <?= $anteil_offline[$i - 1] ?>%</span><br>
                 <span style="background:#d0d0d0; padding:2px">None: <?= $anteil_none[$i - 1] ?>%</span></div>
-
             <div style="padding-top:50px; width:100%; margin-left:-1px; margin-top:-22px; border-bottom: #d0d0d0 1px solid; border-right:#d0d0d0 0px solid; border-left:#d0d0d0 1px solid; border-collapse: collapse"></div>
         </div>
         <?php

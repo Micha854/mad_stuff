@@ -1,11 +1,8 @@
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <?php
-$config = parse_ini_file("config.ini", TRUE);
-
-
+$config = json_decode(file_get_contents('config.json'), true);
 
 // Create database mapadroid
-$mysqli = new mysqli($config["mysql"]["dbHost"], $config["mysql"]["dbUsername"], $config["mysql"]["dbPassword"], $config["mapadroid"]["dbName"]);
+$mysqli = new mysqli($config["db"]["dbHost"], $config["db"]["dbUsername"], $config["db"]["dbPassword"], $config["database"]["mapadroid"]);
 if ($mysqli->connect_error) {
 	die('Error : ('. $mysqli->connect_errno .') '. $mysqli->connect_error);
 }
