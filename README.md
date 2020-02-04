@@ -1,9 +1,9 @@
 # mad_stuff with PHP :)
 
 ### index.php
-- shows all devices with colored highlights, sorting and notification function
+- shows all devices live data with colored highlights, sorting and notification function
 
-![MAD-Devices](https://raw.githubusercontent.com/Micha854/mad_stuff/master/20200111_164238.jpg)
+![MAD-Devices](https://raw.githubusercontent.com/Micha854/mad_stuff/master/images/status_page.png)
 
 ### mad_set.php
 - IV List Managing &amp; Route recalc
@@ -13,7 +13,7 @@
 
 #### install
 
-create a sql table for chart data and put the name of the database on config file under [python] section:
+create a sql table for chart data and put the name of the database on config file under [py-option] section:
 
 ```
 CREATE TABLE `status` (
@@ -31,4 +31,4 @@ COMMIT;
 
 the python script must always run for the worker statistics to work correctly
 
-![MAD-Devices](https://raw.githubusercontent.com/Micha854/mad_stuff/master/chart.png)
+![MAD-Devices](https://raw.githubusercontent.com/Micha854/mad_stuff/master/images/stats_page.png)
