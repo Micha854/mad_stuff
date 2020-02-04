@@ -17,6 +17,10 @@ if ($mysqli->connect_error) {
     die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
 }
 
+// SET DEFAULT CHARSETS TO UTF-8
+mysqli_query($mysqli, "SET NAMES 'utf8'");
+header("Content-Type: text/html; charset=utf-8");
+
 if (isset($_GET["reset"]) == '1') {
     $sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id");
     while ($reset = $sql->fetch_array()) {
@@ -35,29 +39,23 @@ if (isset($_GET["reset"]) == '1') {
 if (isset($_GET["mute"])) {
     if ($_GET["mute"] == 'off') {
         if (isset($_COOKIE[$_GET['origin']])) {
-            //unset($_COOKIE[$_GET['origin'].'[mute]']);
             setcookie($_GET['origin'] . '[origin]', $_GET['origin'], time(), "/");
             setcookie($_GET['origin'] . '[time]', time(), time(), "/");
             setcookie($_GET['origin'] . '[mute]', "", time(), "/");
         }
     } elseif ($_GET["mute"] == 'on') {
         if (isset($_COOKIE[$_GET['origin']])) {
-            //$_SESSION[$_GET['origin']]['mute'] = 'mute';
-            //$_SESSION[$_GET['origin']]['time'] = 9999999999;
             setcookie($_GET['origin'] . '[origin]', $_GET['origin'], time() + 31536000, "/");
             setcookie($_GET['origin'] . '[time]', time() + 31536000, time() + 31536000, "/");
             setcookie($_GET['origin'] . '[mute]', 'mute', time() + 31536000, "/");
-            //setcookie($_GET['origin'].'[time]', '' , time()+3600);
         } else {
             setcookie($_GET['origin'] . '[origin]', $_GET['origin'], time() + 31536000, "/");
             setcookie($_GET['origin'] . '[time]', time() + 31536000, time() + 31536000, "/");
             setcookie($_GET['origin'] . '[mute]', 'mute', time() + 31536000, "/");
         }
     } elseif ($_GET["mute"] == 'all') {
-        //$_SESSION['mute'] = 'all';
         setcookie('mute', 'all', time() + 31536000, "/");
     } elseif ($_GET["mute"] == 'reset') {
-        //unset($_COOKIE['mute']);
         setcookie('mute', "", time(), "/");
     }
 	header("Location: " . $config["option"]["url"] . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex);
@@ -187,27 +185,18 @@ while ($row = $sql->fetch_array()) {
             $status = 'offline';
             $background = '#FFFF99';
             if (!isset($_COOKIE[$origin])) {  // none cookie
-                //if($i == 1) {
                 if (!isset($_COOKIE[$origin]['mute']) && !isset($_COOKIE['mute'])) {
                     $audio .= "<audio autoplay><source src=\"" . $config["option"]["beep"] . "?i=" . time() . "\" type=\"audio/mpeg\"></audio>";
-                    //$_SESSION[$origin] = array("origin" => $row["origin"], "time" => time());
-                    //setcookie("TestCookie", $value, time()+3600);
                     setcookie($origin . '[origin]', $origin, time() + $config["option"]["notify"], "/");
                     setcookie($origin . '[time]', time() + $config["option"]["notify"], time() + $config["option"]["notify"], "/");
-                    //$i++;
                 }
-                //}
             } elseif (isset($_COOKIE[$origin]["time"]) && $_COOKIE[$origin]["time"] < time() - $config["option"]["notify"] && !isset($_COOKIE['mute'])) {
-                //unset($_SESSION[$origin]);
                 setcookie($origin, "", time() - 3600, "/");
             } $o++;
         } else {
             $status = 'online';
             $background = '#66CC66';
             if (isset($_COOKIE[$origin])) {
-                //unset($_SESSION[$origin]);
-                //setcookie($origin,	"",			time()-3600);
-
                 setcookie($origin . '[origin]', $origin, time() - 3600, "/");
                 setcookie($origin . '[time]', time(), time() - 3600, "/");
                 if (isset($_COOKIE[$origin]['mute'])) {
@@ -293,15 +282,14 @@ if (isset($_GET['mute']) && $_GET['mute'] == 'reset') {
     }
 }
 
-$o_title = ($o > 0 ? " ($o)" : '');
-
+$o_title = ($o > 0 ? $o : '');
 
 $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
 $quest_stat = '
 <div style="width:100%;border-bottom:solid 0.5px #dcdcdc;border-top:solid 0.1px #dcdcdc">
-	<span style="position:absolute;left:50%;transform:translate(-50%);font-size:15px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
-	<div style="width:'.$full_quest.'%;display:block;min-height:22px;background:#66CCFF"></div>
+	<span style="position:absolute;left:50%;transform:translate(-50%);font-size:14.5px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
+	<div style="width:'.$full_quest.'%;display:block;min-height:21px;background:#FFCCFF"></div>
 </div>';
 
 //übernehme die url parameter in den ajax request
@@ -315,12 +303,10 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
 		echo $audio;
 	}
 	echo $ausgabe . '</table>';
+	echo "<script>var page_title = 'MAD - Worker Status (' + ". $o_title ." + ')';</script>";
 	//if($trs_quest['today'] != $trs_quest['total']) {
 		echo $quest_stat;
 	//}
-	?>
-	<title>MAD - Worker Status <?= $o_title ?></title>
-	<?php
 //echo 'currently: '.time();
 //echo '<pre>';
 //print_r($_COOKIE);
@@ -335,9 +321,8 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!--<meta http-equiv="refresh" content="<?= $config["option"]["reload"] ?>; URL=<?= $config["option"]["url"] . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex ?>">-->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-        <title>MAD - Worker Status <?= $o_title ?></title>
+        <title>MAD - Worker Status (<?= $o_title ?>)</title>
         <style>
             * {
                 margin: 0;
@@ -346,7 +331,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
 
             html {
                 background:#FAFAFA;
-                font-size:15px
+                font-size:14.5px
             }
 
             table {
@@ -424,13 +409,9 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
         <div id="javascript-timer-init" style="display:none"><?= $config["option"]["notify"] ?></div>
         <div id="output" class="output">
             <?php
-//if(isset($audio)) {
-//	for($n=1; $n < $i; $n++) {
             if (!isset($_GET['mute'])) {
                 echo $audio;
             }
-//	}
-//}
             echo $ausgabe . '</table>';
 
 			//if($trs_quest['today'] != $trs_quest['total']) {
@@ -475,7 +456,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
         <script>
-            $(document).ready(function () {
+			$(document).ready(function () {
                 // run the first time; all subsequent calls will take care of themselves
                 setTimeout(worker, <?=$config["option"]["reload"]*1000;?>);
 
@@ -488,6 +469,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
                     data:<?= $ajaxData ?>,
                     success: function (data) {
                         $('#output').html(data);
+						$("title").text(page_title);
                     },
                     error: function (data) {
                         $('#output').html('Ein Fehler ist aufgetreten. Bitte Seite manuell neu laden.');

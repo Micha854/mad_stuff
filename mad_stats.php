@@ -1,10 +1,10 @@
-<!DOCTYPE HTML>
-<html>
+<!doctype html>
+<html lang="de">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 		<title>MAD - Worker Statistik</title>
-        <style type="text/css">
+        <style>
             * {
                 margin: 0;
                 padding: 0;
@@ -74,7 +74,7 @@
 			$date = date("Y-m-d");
 		}
 		
-		$form = '<form action="" method="get"><select name="date" onchange="this.form.submit()">';
+		$form = '<form method="get"><select name="date" onchange="this.form.submit()">';
 		
 			//echo '<option value="'.$date.'" selected>'. $date .'</option>';		
 		while ($dat = $all_dates->fetch_array()) {
@@ -129,9 +129,11 @@
                 //if (stripos($v[0], $date) === false) {
                   //  unset($myArray[$k]);
                 //}
-				if($myArray[$k][0] == $myArray[$k+1][0]) {	// delete where datetime == datetime !!
-					unset($myArray[$k]);
-					unset($myArray[$k+1]);
+				if(isset($myArray[$k+1][0]) && isset($myArray[$k+1][0])) {
+					if($myArray[$k][0] == $myArray[$k+1][0]) {	// delete where datetime == datetime !!
+						unset($myArray[$k]);
+						unset($myArray[$k+1]);
+					}
 				}
             }
             $myArray = array_values($myArray);
