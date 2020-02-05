@@ -22,6 +22,7 @@
 		"order":		"origin",		"_comment": "order the devices on stats [id,origin]",
 		"breite":		"100%",			"_comment": "table width in % or px",
 		"size":			"22px",			"_comment": "font-size in px or pt | not work on mobil, only for desktop",
+		"theme":		"",				"_comment": "default value is empty, for dark theme set it to dark, you can configurate the colors.php",
 		
 		"route":		0,				"_comment": "warn if routes are too long, route >= 100 red && route >=65 yellow",
 		"reload":		1,				"_comment": "reload page in seconds, for live data view use 1 second",

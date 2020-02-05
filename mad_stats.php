@@ -68,11 +68,7 @@
 		$all_dates = $mysqli->query("SELECT createdate FROM $table.status GROUP BY createdate ORDER BY createdate DESC");
 		//var_dump($all_dates);
 		
-		if(isset($_GET["date"])) {
-			$date = $_GET["date"];
-		} else {
-			$date = date("Y-m-d");
-		}
+		$date = isset($_GET["date"]) ? $_GET["date"] : date("Y-m-d");
 		
 		$form = '<form method="get"><select name="date" onchange="this.form.submit()">';
 		

@@ -2,6 +2,8 @@
 session_start();
 
 $config = json_decode(file_get_contents('config.json'), true);
+$theme = $config["option"]["theme"];
+include("colors.php");
 
 if (isset($_GET["spalte"]) and isset($_GET["sort"])) {
     $_SESSION["sort"] = '?spalte=' . $_GET["spalte"] . '&sort=' . $_GET["sort"];
@@ -124,7 +126,7 @@ while ($row = $sql->fetch_array()) {
     $origin = $row["origin"];
     $next_seconds = $row["currentSleepTime"];
     if ($row["lastProtoDateTime"] == NULL) {
-        $ausgabe .= "<tr style=\"background:#FF6666\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        $ausgabe .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
     } else {
 
         $next_months = floor($next_seconds / (3600 * 24 * 30));
@@ -180,10 +182,10 @@ while ($row = $sql->fetch_array()) {
 
         if ($seconds < $next_seconds && $row["lastProtoDateTime"] > date("Y-m-d H:i:s", strtotime("- $cooldown seconds"))) {
             $status = 'online';
-            $background = '#66CCFF';
+            $background = $colorBlue;
         } elseif ($row["lastProtoDateTime"] < date("Y-m-d H:i:s", strtotime("- $cooldown seconds"))) {
             $status = 'offline';
-            $background = '#FFFF99';
+            $background = $colorYellow;
             if (!isset($_COOKIE[$origin])) {  // none cookie
                 if (!isset($_COOKIE[$origin]['mute']) && !isset($_COOKIE['mute'])) {
                     $audio .= "<audio autoplay><source src=\"" . $config["option"]["beep"] . "?i=" . time() . "\" type=\"audio/mpeg\"></audio>";
@@ -195,7 +197,7 @@ while ($row = $sql->fetch_array()) {
             } $o++;
         } else {
             $status = 'online';
-            $background = '#66CC66';
+            $background = $colorGreen;
             if (isset($_COOKIE[$origin])) {
                 setcookie($origin . '[origin]', $origin, time() - 3600, "/");
                 setcookie($origin . '[time]', time(), time() - 3600, "/");
@@ -287,9 +289,9 @@ $o_title = ($o > 0 ? $o : '');
 $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
 $quest_stat = '
-<div style="width:100%;border-bottom:solid 0.5px #dcdcdc;border-top:solid 0.1px #dcdcdc">
+<div style="width:100%;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
 	<span style="position:absolute;left:50%;transform:translate(-50%);font-size:14.5px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
-	<div style="width:'.$full_quest.'%;display:block;min-height:21px;background:#FFCCFF"></div>
+	<div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
 </div>';
 
 //übernehme die url parameter in den ajax request
@@ -320,8 +322,9 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
 <html lang="de">
     <head>
         <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <title>MAD - Worker Status (<?= $o_title ?>)</title>
         <style>
             * {
@@ -330,7 +333,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             }
 
             html {
-                background:#FAFAFA;
+                background:<?=$colorBackground?>;
                 font-size:14.5px
             }
 
@@ -363,11 +366,11 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             }
 
             .warn {
-                background:#FFFF99
+                background:<?=$colorYellow?>
             }
 
             .warn2 {
-                background:#FF6666
+                background:<?=$colorRed?>
             }
 
             @media only screen and (max-width: 550px) {
@@ -387,7 +390,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
                 }
             }
             .navbar{
-                min-height:17px;
+                min-height:17px
             }
 
             .navbar-brand {
@@ -397,11 +400,20 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             .navbar  a {
                 font-size: 14.2px;
             }
+			
+			.notify {
+				margin-left:8px
+			}
 
             .output {
                 padding-bottom:50px;
-                background:#FAFAFA
+                background:<?=$colorBackground?>;
+				height:100%;
+				color:<?=$colorFont?>
             }
+			i, material-icons {
+				vertical-align: middle;
+			}
         </style>
 
     </head>
@@ -427,8 +439,10 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             ?>
         </div>
 
-        <nav class="navbar py-0 fixed-bottom navbar-expand-md navbar-light" style="background-color:#E6E6E6">
-            <span class="navbar-brand">Worker Status <span id="countdown" class="reload">(<?= $config["option"]["reload"] ?>)</span> <span class="notify"><?= $set_notify ?></span></span>
+        <nav class="navbar py-0 fixed-bottom navbar-expand-md navbar-light" style="background-color:<?=$colorNav?>">
+            <span class="navbar-brand">Worker Status <span id="countdown" class="reload">(<?= $config["option"]["reload"] ?>)</span> <span class="notify"><?= $set_notify ?></span>
+				<a href="#" id="goFS"><i class="material-icons">crop_free</i></a>
+</span>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -456,6 +470,12 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
         <script>
+			  var goFS = document.getElementById("goFS");
+				goFS.addEventListener("click", function() {
+					document.body.requestFullscreen();
+				}, false);
+
+			
 			$(document).ready(function () {
                 // run the first time; all subsequent calls will take care of themselves
                 setTimeout(worker, <?=$config["option"]["reload"]*1000;?>);
@@ -491,7 +511,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
                     // Display 'counter' wherever you want to display it.
                     if (counter <= 0) {
                         clearInterval(interval);
-                        $('#countdown').html("Aktualisieren...");
+                        $('#countdown').html('<i class="material-icons">refresh</i>');
                         return;
                     } else {
                         $('#countdown').text('(' + counter + ')');
