@@ -9,3 +9,6 @@ $colorRed			= $theme=='dark' ? '#5b0f02' : '#FF6666';
 $colorQuest			= $theme=='dark' ? '#50345f' : '#FFCCFF';
 $colorNoQuest		= $theme=='dark' ? '#4d4650' : '#dcdcdc';
 $colorNav			= $theme=='dark' ? '#a494ac' : '#E6E6E6';
+$colorLink			= $theme=='dark' ? '#000000' : '#0000EE';
+$colorLinkHover		= $theme=='dark' ? '#9b111e' : '#FF0000';
+$colorLinkActive	= $theme=='dark' ? '#9b111e' : '#FF0000';

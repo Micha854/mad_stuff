@@ -353,16 +353,16 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             }
 
             a:link, a:visited {
-                color: Royalblue;
+                color: <?=$colorLink?>;
                 text-decoration: None;
             }
 
             a:hover, a:active {
-                color: Red;
+                color: <?=$colorLinkHover?>;
             }
 
             #active {
-                color: #FF0000;
+                color: <?=$colorLinkActive?>;
             }
 
             .warn {
@@ -411,6 +411,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
 				height:100%;
 				color:<?=$colorFont?>
             }
+			
 			i, material-icons {
 				vertical-align: middle;
 			}
