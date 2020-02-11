@@ -15,6 +15,13 @@ array_walk($csv, function(&$a) use ($csv) {
 
 
 $anzahl = count ( $csv );
+$last = end($csv);
+
+if($anzahl == 0) {
+	echo '<h3>für "'.$device[0].'" sind noch keine Einträge vorhanden!</h3>';
+	die();
+}
+
 $preserved = array_reverse($csv, true);
 //var_dump($preserved);
 $hight = 100;
@@ -36,16 +43,10 @@ for ($x = $anzahl-1; $x >= 0; $x--) {
 		
 	}
 }
-$abc = $anzahl-1;
-
-if($abc <= 0) {
-	echo '<h3>für "'.$device[0].'" sind noch keine Einträge vorhanden!</h3>';
-	die();
-}
-
+$abc = $last["end"] != 'unknown' ? $anzahl : $anzahl-1;
 $durch = $summe / $abc;
 $output = '<div style="text-align:center;margin:5px">Durchschnittliche Rundenzeit: <b>'.number_format($durch,2).' Minuten</b></div>';
-$balken2 = $hight * 100 / $durch-2;
+$balken2 = $hight * 100 / $durch;
 //echo 'b2: '.$balken2.'<br><br>';
 
 for ($x = $anzahl-1; $x >= 0; $x--) {
@@ -57,9 +58,9 @@ for ($x = $anzahl-1; $x >= 0; $x--) {
 		
 		$mins = number_format($seconds / 60, 2);
 	
-		$balken = $hight * 100 / $mins-0.5;
+		$balken = $hight * 100 / $mins;
 	
-		//echo '<b>'.$balken.'</b>';
+		//echo '<b>'.$balken.'</b><br>';
 		if($mins == $hight) {
 			$best_time = '#66CCFF';
 		} else {
@@ -68,7 +69,7 @@ for ($x = $anzahl-1; $x >= 0; $x--) {
 		
 		$output .= '
 
-		<div style="width:100%-1px;border:solid 0.5px #CCCCCC">
+		<div style="width:100%;border-bottom:solid 0.5px #CCCCCC;border-top:solid 0.5px #CCCCCC">
 			<span style="position:absolute;left:50%;transform:translate(-50%);font-weight:bolder">'.$mins.' min</span>
 			<div style="width:2px;position:absolute;left:'.$balken2.'%; height:21px;background:#FF0000"></div>
 	
