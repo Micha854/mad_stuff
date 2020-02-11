@@ -15,13 +15,13 @@ array_walk($csv, function(&$a) use ($csv) {
 
 
 $anzahl = count ( $csv );
-$last = end($csv);
 
 if($anzahl == 0) {
 	echo '<h3>für "'.$device[0].'" sind noch keine Einträge vorhanden!</h3>';
 	die();
 }
 
+$last = end($csv);
 $preserved = array_reverse($csv, true);
 //var_dump($preserved);
 $hight = 100;
