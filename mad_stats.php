@@ -55,9 +55,16 @@
         </style>
 
         <?php
+		error_reporting(E_ALL); // Error engine - always E_ALL!
+		ini_set('ignore_repeated_errors', TRUE); // always TRUE
+		ini_set('display_errors', FALSE); // Error display - FALSE only in production environment or real server. TRUE in development environment
+		ini_set('log_errors', TRUE); // Error logging engine
+		ini_set('error_log', dirname(__FILE__).'/errors.log'); // Logging file path
+		ini_set('log_errors_max_len', 1024); // Logging file size
+
 		$config = json_decode(file_get_contents('config.json'), true);
 
-		error_reporting(0);
+		//error_reporting(0);
 		
 		$mysqli = new mysqli($config["db"]["dbHost"], $config["db"]["dbUsername"], $config["db"]["dbPassword"], $config["database"]["mapadroid"]);
         if ($mysqli->connect_error) {

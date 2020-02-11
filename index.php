@@ -1,6 +1,13 @@
 <?php
 session_start();
 
+error_reporting(E_ALL); // Error engine - always E_ALL!
+ini_set('ignore_repeated_errors', TRUE); // always TRUE
+ini_set('display_errors', FALSE); // Error display - FALSE only in production environment or real server. TRUE in development environment
+ini_set('log_errors', TRUE); // Error logging engine
+ini_set('error_log', dirname(__FILE__).'/errors.log'); // Logging file path
+ini_set('log_errors_max_len', 1024); // Logging file size
+
 $config = json_decode(file_get_contents('config.json'), true);
 $theme = $config["option"]["theme"];
 include("colors.php");
@@ -19,12 +26,33 @@ if ($mysqli->connect_error) {
     die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
 }
 
+$structure = dirname(__FILE__)."/mon_mitm";
+if($config["option"]["record"] == 1) {
+	if (!file_exists($structure)) {
+		if (!mkdir($structure, 0777, true)) {
+			die('Creating the directory "mon_mitm" failed ...');
+		}
+	}
+}
+
 // SET DEFAULT CHARSETS TO UTF-8
 mysqli_query($mysqli, "SET NAMES 'utf8'");
 header("Content-Type: text/html; charset=utf-8");
 
 if (isset($_GET["reset"]) == '1') {
-    $sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id");
+	// delete logfiles
+	if (is_dir($structure)) {
+		if ($dh = opendir($structure)) {
+			while (($file = readdir($dh)) !== false) {
+				if ($file!="." AND $file !="..") {
+					unlink("$structure/$file");
+				}
+			}
+			closedir($dh);
+		}
+	}
+	// reset settings
+	$sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id");
     while ($reset = $sql->fetch_array()) {
         setcookie($reset["origin"] . '[origin]', $reset["origin"], time() - 3600, "/");
         setcookie($reset["origin"] . '[time]', time(), time() - 3600, "/");
@@ -87,7 +115,7 @@ $trs_quest = $mysqli->query("SELECT count(`GUID`) AS total
 ,(SELECT count(`GUID`) FROM trs_quest WHERE FROM_UNIXTIME(quest_timestamp,'%Y-%m-%d') = CURDATE()) AS today
 FROM trs_quest ")->fetch_array();
 
-$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id ORDER BY " . $spalte . " " . $sort . ", origin " . $sort);
+$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id ORDER BY " . $spalte . " " . $sort . ", origin " . $sort);
 
 $ausgabe = '<table><tr><td class="count" style="font-size:16px"><b>Count:</b></td>';
 foreach ($spalten as $spalte => $name) {
@@ -125,6 +153,7 @@ $i = 1;
 while ($row = $sql->fetch_array()) {
     $origin = $row["origin"];
     $next_seconds = $row["currentSleepTime"];
+	$clock = $config["option"]["record"] == 1 ? '<a href="javascript:MitteFenster(\'times.php?file='.$origin.'.txt\', 500, 600);"><i class="material-icons" id="clock">query_builder</i></a>' : '';
     if ($row["lastProtoDateTime"] == NULL) {
         $ausgabe .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
     } else {
@@ -212,29 +241,29 @@ while ($row = $sql->fetch_array()) {
                 $mute = $origin . ' &#128263';
             } elseif (isset($_GET["mute"]) && ($_GET["mute"] == 'off' && isset($_GET["origin"]) && $_GET["origin"] == $origin)) {
                 if (isset($_SESSION["sort"])) {
-                    $mute = '<a href="' . $sortIndex . '&mute=on&origin=' . $origin . '">' . $origin . '</a>';
+                    $mute = '<a href="' . $sortIndex . '&mute=on&origin=' . $origin . '">' . $origin . '</a>'.$clock;
                 } else {
-                    $mute = '<a href="?mute=on&origin=' . $origin . '">' . $origin . '</a>';
+                    $mute = '<a href="?mute=on&origin=' . $origin . '">' . $origin . '</a>'.$clock;
                 }
             } elseif (isset($_COOKIE[$origin]['mute']) or isset($_GET["mute"]) && ($_GET["mute"] == 'on') && isset($_GET["origin"]) && ($_GET["origin"] == $origin)) {
                 if (isset($_SESSION["sort"])) {
-                    $mute = '<a href="' . $sortIndex . '&mute=off&origin=' . $origin . '">' . $origin . ' &#128263;</a>';
+                    $mute = '<a href="' . $sortIndex . '&mute=off&origin=' . $origin . '">' . $origin . $clock . ' &#128263;</a>';
                 } else {
-                    $mute = '<a href="?mute=off&origin=' . $origin . '">' . $origin . ' &#128263;</a>';
+                    $mute = '<a href="?mute=off&origin=' . $origin . '">' . $origin . $clock . ' &#128263;</a>';
                 }
             } else {
                 if (isset($_SESSION["sort"])) {
-                    $mute = '<a href="' . $sortIndex . '&mute=on&origin=' . $origin . '">' . $origin . '</a>';
+                    $mute = '<a href="' . $sortIndex . '&mute=on&origin=' . $origin . '">' . $origin . '</a>'.$clock;
                 } else {
-                    $mute = '<a href="?mute=on&origin=' . $origin . '">' . $origin . '</a>';
+                    $mute = '<a href="?mute=on&origin=' . $origin . '">' . $origin . '</a>'.$clock;
                 }
             }
         } elseif (isset($_GET['mute']) && ($_GET['mute'] == 'reset')) {
-            $mute = $origin;
+            $mute = $origin . $clock;
         } elseif (isset($_COOKIE['mute']) or isset($_GET['mute']) && $_GET['mute'] == 'all') {
-            $mute = $origin . ' &#128263';
+            $mute = $origin . $clock . ' &#128263';
         } else {
-            $mute = $origin;
+            $mute = $origin . $clock;
         }
 
         if ($status == 'offline' && isset($_COOKIE[$origin]['time'])) {
@@ -244,14 +273,61 @@ while ($row = $sql->fetch_array()) {
             $timer = '<td class="count"></td>';
         }
 
-        if ($row["routeMax"] >= 100 && $config["option"]["route"]) {
+        if ($row["routeMax"] >= 100 && $config["option"]["route"] && $row["mode"] != 'pokestops') {
             $maxRoute = '<span class="warn2">' . $row["routeMax"] . '</span>';
-        } elseif ($row["routeMax"] >= 65 && $config["option"]["route"]) {
+        } elseif ($row["routeMax"] >= 65 && $config["option"]["route"] && $row["mode"] != 'pokestops') {
             $maxRoute = '<span class="warn">' . $row["routeMax"] . '</span>';
         } else {
             $maxRoute = $row["routeMax"];
         }
-
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if($config["option"]["record"] == 1) {
+			$logfile = $structure.'/'.$origin.'.txt';
+			
+			if(is_file($logfile)) {
+				$lines = file ($logfile);
+				//$letzte_zeile = $lines[count($lines)-1];
+				$letzte_zeile = array_slice($lines, -1);
+				$csv = array_map('str_getcsv', file($logfile));
+				array_walk($csv, function(&$a) use ($csv) {
+					$a = array_combine(array('start', 'area', 'end'), $a);
+				});
+			
+				$last = end($csv);
+			} else {
+				$datei = fopen($logfile,"a");
+			}
+			
+			if($status == 'offline' && $last["end"] == 'unknown') {	// gerät offline, route zurücksetzen falls begonnen
+				$lines = file ($logfile);
+				array_pop($lines);
+				$text = join('', $lines);
+				$fp = fopen($logfile, "w"); 
+				foreach($lines as $key => $text) {
+					fputs($fp, $text);
+				} 
+				fclose ($fp);
+			} elseif($row["routePos"] == 1 && $row["mode"] == 'mon_mitm' && ($last["start"] && $last["end"] != 'unknown' or empty($letzte_zeile))) {	// start route
+				$datei = fopen($logfile,"a");
+				fwrite($datei, date("Y-m-d H:i:s") . ',' . $row["name"] . ',' . 'unknown',100);
+				fclose($datei);
+			} elseif($row["routePos"] == $row["routeMax"] && $last["start"] && $last["end"] == 'unknown') {	// end route
+				$lines = file ($logfile);
+				if($last["area"] != $row["name"]) {	// die area ist eine andere wie zu beginn
+					array_pop($lines);
+					$text = join('', $lines);
+				} else {	// alles ok, route abschließen
+					$lines[count($lines)-1] = $last["start"] . ',' . $last["area"] . ',' . date("Y-m-d H:i:s") . "\n";
+				}
+				$fp = fopen($logfile, "w"); 
+				foreach($lines as $key => $text) {
+					fputs($fp, $text);
+				} 
+				fclose ($fp);
+			}
+		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         $ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
     } $i++;
 }
@@ -300,7 +376,7 @@ $ajaxData['action'] = 'ajax_refresh';
 $ajaxData = json_encode($ajaxData);
 
 //wenn wir ajax machen, dann halte hier an
-if ($_REQUEST['action'] == 'ajax_refresh') {
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
 	if (!isset($_GET['mute'])) {
 		echo $audio;
 	}
@@ -336,6 +412,10 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
                 background:<?=$colorBackground?>;
                 font-size:14.5px
             }
+			
+			#clock {
+				font-size:14.5px
+			}
 
             table {
                 width:<?= $config["option"]["breite"] ?>
@@ -382,7 +462,7 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
             }
 
             @media only screen and (min-width: 550px) {
-                .output {
+                .output, #clock {
                     font-size:<?= $config["option"]["size"] ?>
                 }
                 .mobile {
@@ -469,13 +549,21 @@ if ($_REQUEST['action'] == 'ajax_refresh') {
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
         <script>
-			  var goFS = document.getElementById("goFS");
-				goFS.addEventListener("click", function() {
-					document.body.requestFullscreen();
-				}, false);
-
+			function MitteFenster(Dateiname,PopUpBreite,PopUpHoehe) {
+				sbreite = screen.availWidth;
+				shoehe = screen.availHeight;
+				x = (sbreite-PopUpBreite)/2;
+				y = (shoehe-PopUpHoehe)/2;
+				Eigenschaften="left="+x+",top="+y+",screenX="+x+",screenY="+y+",width="+PopUpBreite+",height="+PopUpHoehe+",menubar=no,location=no,toolbar=no,status=no,resizable=no,scrollbars=no,dependent=yes";
+				fenster=window.open(Dateiname,"order",Eigenschaften);
+				fenster.focus();
+			}
+			
+			var goFS = document.getElementById("goFS");
+			goFS.addEventListener("click", function() {
+				document.body.requestFullscreen();
+			}, false);
 			
 			$(document).ready(function () {
                 // run the first time; all subsequent calls will take care of themselves

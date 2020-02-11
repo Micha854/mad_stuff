@@ -1,4 +1,11 @@
 <?php
+error_reporting(E_ALL); // Error engine - always E_ALL!
+ini_set('ignore_repeated_errors', TRUE); // always TRUE
+ini_set('display_errors', FALSE); // Error display - FALSE only in production environment or real server. TRUE in development environment
+ini_set('log_errors', TRUE); // Error logging engine
+ini_set('error_log', dirname(__FILE__).'/errors.log'); // Logging file path
+ini_set('log_errors_max_len', 1024); // Logging file size
+
 $config = json_decode(file_get_contents('config.json'), true);
 
 // Create database mapadroid
@@ -81,6 +88,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 		$monlist_id = $mysqli->insert_id;
 		$i=0;
 		
+		$insert_ids = '';
 		foreach ($ivlist as $row) {
 			if(is_numeric($row)) {
 				$insert_ids .= mysqli_query($mysqli, "INSERT INTO settings_monivlist_to_mon SET monlist_id = $monlist_id, mon_id = $row, mon_order = $i");
