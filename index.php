@@ -604,6 +604,16 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                         return;
                     } else {
                         $('#countdown').text('(' + counter + ')');
+                        
+                        $('.count').each(function() {
+                            var cc = parseInt($(this).text());
+                            
+                            if(cc>0){
+                                cc--;
+                                $(this).text(cc);
+                            }
+                        });
+
                         //console.log("Timer --> " + counter);
                     }
                 }, 1000);
