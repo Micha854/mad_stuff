@@ -7,6 +7,7 @@ ini_set('error_log', dirname(__FILE__).'/errors.log'); // Logging file path
 ini_set('log_errors_max_len', 1024); // Logging file size
 
 $config = json_decode(file_get_contents('config.json'), true);
+$instance = $config["option"]["instance_id"];
 
 // Create database mapadroid
 $mysqli = new mysqli($config["db"]["dbHost"], $config["db"]["dbUsername"], $config["db"]["dbPassword"], $config["database"]["mapadroid"]);
@@ -26,7 +27,7 @@ if(isset($_GET["list"])) {
 
 	$poeted = mysqli_real_escape_string($mysqli, $_GET["list"]);
 	
-	$sql = $mysqli->query("SELECT * FROM settings_monivlist WHERE monlist_id = $poeted ");
+	$sql = $mysqli->query("SELECT * FROM settings_monivlist WHERE monlist_id = $poeted AND instance_id = $instance");
 	$name = $sql->fetch_array();
 	
 	$get_list = $mysqli->query("SELECT * FROM settings_monivlist_to_mon WHERE monlist_id = $poeted ORDER BY mon_order asc");
@@ -59,7 +60,7 @@ if(isset($_GET["route"])) {
 		echo '<h1 style="background:#009900">save</h1>';
 	}
 	
-	$sql = $mysqli->query("SELECT * FROM settings_routecalc WHERE routecalc_id = $poeted ");
+	$sql = $mysqli->query("SELECT * FROM settings_routecalc WHERE routecalc_id = $poeted AND instance_id = $instance");
 	$name = $sql->fetch_array();
 	
 	echo '<a href="mad_set.php"><h1>back</h1></a>';
@@ -81,7 +82,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 	$ivlist = explode(',',$list);
 	$ivlist = array_map('trim', $ivlist);
 	
-	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = '".$config["option"]["instance_id"]."', name = '".$name."' ";
+	$insert_name = "INSERT INTO settings_monivlist SET guid = NULL, instance_id = $instance, name = '".$name."' ";
 	
 	if($insert_name = $mysqli->query($insert_name)) {
 		
@@ -100,10 +101,10 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 	}
 } else {
 	$tbl = '<table><tr><td><b>typ</b></td><td><b>name</b></td><td><b>area_id</b></td><td><b>calc</b></td><td><b>last change</b></td></tr>';
-	$sql_p = $mysqli->query("SELECT q.routecalc_id, p.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_pokestops p	ON p.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = p.area_id WHERE p.area_id IS NOT NULL ");
-	$sql_m = $mysqli->query("SELECT q.routecalc_id, m.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm m	ON m.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = m.area_id WHERE m.area_id IS NOT NULL ");
-	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_iv_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL ");
-	$sql_r = $mysqli->query("SELECT q.routecalc_id, r.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_raids_mitm r	ON r.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = r.area_id WHERE r.area_id IS NOT NULL ");
+	$sql_p = $mysqli->query("SELECT q.routecalc_id, p.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_pokestops p	ON p.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = p.area_id WHERE p.area_id IS NOT NULL AND a.instance_id = $instance");
+	$sql_m = $mysqli->query("SELECT q.routecalc_id, m.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_mon_mitm m	ON m.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = m.area_id WHERE m.area_id IS NOT NULL AND a.instance_id = $instance");
+	$sql_i = $mysqli->query("SELECT q.routecalc_id, i.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_iv_mitm i	ON i.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = i.area_id WHERE i.area_id IS NOT NULL AND a.instance_id = $instance");
+	$sql_r = $mysqli->query("SELECT q.routecalc_id, r.area_id, a.name FROM settings_routecalc q LEFT JOIN settings_area_raids_mitm r	ON r.routecalc = q.routecalc_id LEFT JOIN settings_area a ON a.area_id = r.area_id WHERE r.area_id IS NOT NULL AND a.instance_id = $instance");
 	$out = '';	  
 	while($id = $sql_m->fetch_array() ) {
 		$change = file_exists($structure."/".$id["routecalc_id"].".txt") ? file_get_contents(__DIR__."/routecalc/".$id["routecalc_id"].".txt") : 'NULL';
@@ -126,7 +127,7 @@ if(isset($_POST["submit"]) and $_POST["name"] and $_POST["idlist"]) {
 
 
 // show all your iv lists
-$sql = $mysqli->query("SELECT * FROM settings_monivlist");
+$sql = $mysqli->query("SELECT * FROM settings_monivlist WHERE instance_id = $instance");
 $anzahl = $sql->num_rows;
 if($anzahl != 0) {
 	$sp = "<p><b>my IV lists:</b> ";

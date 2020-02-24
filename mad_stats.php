@@ -93,8 +93,9 @@
         $num = 0;
         $chart = 1;
 		$order_devices = $config["option"]["order"];
+		$instance = $config["option"]["instance_id"];
 		
-        $all_devices = $mysqli->query("SELECT d.name AS origin, d.device_id as id FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id ORDER BY $order_devices");
+        $all_devices = $mysqli->query("SELECT d.name AS origin, d.device_id as id FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id WHERE d.instance_id = $instance ORDER BY $order_devices");
         while ($device = $all_devices->fetch_array()) {
 
             $origin = $device["origin"];

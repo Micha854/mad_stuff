@@ -20,6 +20,7 @@ with open('config.json') as file:
 statusOfflineTimeout = data["py-option"]["timeout"]
 statusInterval = data["py-option"]["interval"]
 cleanupDbEntryOlderThan = data["py-option"]["cleanup"]
+instance_id = data["option"]["instance_id"]
 
 def connect_sourcedb(): 
     connectionSourceDB = pymysql.connect(host=data["db"]["dbHost"],
@@ -44,7 +45,7 @@ def check_status_table_from_sourcedb():
         connectionSourceDB = connect_sourcedb()
         with connectionSourceDB.cursor() as cursor:
             # Read a single record
-            sql = "SELECT `settings_device`.`name` AS `origin`, `trs_status`.`lastProtoDateTime`, `trs_status`.`currentSleepTime` FROM `trs_status` LEFT JOIN `settings_device` ON `trs_status`.`device_id` = `settings_device`.`device_id`"
+            sql = "SELECT `settings_device`.`name` AS `origin`, `trs_status`.`lastProtoDateTime`, `trs_status`.`currentSleepTime` FROM `trs_status` LEFT JOIN `settings_device` ON `trs_status`.`device_id` = `settings_device`.`device_id` WHERE trs_status.instance_id = " + str(instance_id)
             cursor.execute(sql)
             SourceStatusDict = cursor.fetchall()
             #print("Source:")
