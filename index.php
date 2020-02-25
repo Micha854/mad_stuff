@@ -29,11 +29,11 @@ if ($mysqli->connect_error) {
 
 $structure = dirname(__FILE__)."/mon_mitm";
 if($config["option"]["record"] == 1) {
-	if (!file_exists($structure)) {
-		if (!mkdir($structure, 0777, true)) {
-			die('Creating the directory "mon_mitm" failed ...');
-		}
-	}
+    if (!file_exists($structure)) {
+        if (!mkdir($structure, 0777, true)) {
+            die('Creating the directory "mon_mitm" failed ...');
+        }
+    }
 }
 
 // SET DEFAULT CHARSETS TO UTF-8
@@ -41,19 +41,19 @@ mysqli_query($mysqli, "SET NAMES 'utf8'");
 header("Content-Type: text/html; charset=utf-8");
 
 if (isset($_GET["reset"]) == '1') {
-	// delete logfiles
-	if (is_dir($structure)) {
-		if ($dh = opendir($structure)) {
-			while (($file = readdir($dh)) !== false) {
-				if ($file!="." AND $file !="..") {
-					unlink("$structure/$file");
-				}
-			}
-			closedir($dh);
-		}
-	}
-	// reset settings
-	$sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id WHERE d.instance_id = ".$instance);
+    // delete logfiles
+    if (is_dir($structure)) {
+        if ($dh = opendir($structure)) {
+            while (($file = readdir($dh)) !== false) {
+                if ($file!="." AND $file !="..") {
+                    unlink("$structure/$file");
+                }
+            }
+            closedir($dh);
+        }
+    }
+    // reset settings
+    $sql = $mysqli->query("SELECT d.name AS origin FROM trs_status t LEFT JOIN settings_device d ON t.device_id = d.device_id WHERE d.instance_id = ".$instance);
     while ($reset = $sql->fetch_array()) {
         setcookie($reset["origin"] . '[origin]', $reset["origin"], time() - 3600, "/");
         setcookie($reset["origin"] . '[time]', time(), time() - 3600, "/");
@@ -89,7 +89,7 @@ if (isset($_GET["mute"])) {
     } elseif ($_GET["mute"] == 'reset') {
         setcookie('mute', "", time(), "/");
     }
-	header("Location: " . $config["option"]["url"] . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex);
+    header("Location: " . $config["option"]["url"] . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'] . $sortIndex);
     exit;
 }
 
@@ -141,12 +141,12 @@ foreach ($spalten as $spalte => $name) {
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
                 '</td>';
-		$ausgabe2 .= '<td class="pos">' .
+        $ausgabe2 .= '<td class="pos">' .
                 ucfirst($name) .
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
                 '</td>';
-		$ausgabe_mobile .= '<td class="pos">' .
+        $ausgabe_mobile .= '<td class="pos">' .
                 ucfirst($name) .
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
@@ -157,12 +157,12 @@ foreach ($spalten as $spalte => $name) {
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
                 '</td>';
-		$ausgabe2 .= '<td>' .
+        $ausgabe2 .= '<td>' .
                 ucfirst($name) .
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
                 '</td>';
-		$ausgabe_mobile .= '<td>' .
+        $ausgabe_mobile .= '<td>' .
                 ucfirst($name) .
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
                 '<a href="?spalte=' . $spalte . '&sort=desc" ' . $active2 . ' title="Absteigend sortieren">&#9660;</a>' .
@@ -179,11 +179,11 @@ $i = 1;
 while ($row = $sql->fetch_array()) {
     $origin = $row["origin"];
     $next_seconds = $row["currentSleepTime"];
-	$clock = $config["option"]["record"] == 1 ? '<a href="javascript:MitteFenster(\'times.php?file='.$origin.'.txt\', 500, 600);"><i class="material-icons" id="clock">query_builder</i></a>' : '';
+    $clock = $config["option"]["record"] == 1 ? '<a href="javascript:MitteFenster(\'times.php?file='.$origin.'.txt\', 500, 600);"><i class="material-icons" id="clock">query_builder</i></a>' : '';
     if ($row["lastProtoDateTime"] == NULL) {
         $ausgabe .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
-		$ausgabe2 .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
-		$ausgabe_mobile .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        $ausgabe2 .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        $ausgabe_mobile .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
     } else {
 
         $next_months = floor($next_seconds / (3600 * 24 * 30));
@@ -295,7 +295,7 @@ while ($row = $sql->fetch_array()) {
         }
 
         if ($status == 'offline' && isset($_COOKIE[$origin]['time'])) {
-			$alert = ($_COOKIE[$origin]['time'] - time() == 0 ? 'next alert' : ($_COOKIE[$origin]['time'] - time()));
+            $alert = ($_COOKIE[$origin]['time'] - time() == 0 ? 'next alert' : ($_COOKIE[$origin]['time'] - time()));
             $timer = "<td class=\"count\" style=\"font-size:12px\" id=\"javascript-timer-" . $i . "\">" . $alert . "</td>";
         } else {
             $timer = '<td class="count"></td>';
@@ -308,62 +308,62 @@ while ($row = $sql->fetch_array()) {
         } else {
             $maxRoute = $row["routeMax"];
         }
-		
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if($config["option"]["record"] == 1) {
-			$logfile = $structure.'/'.$origin.'.txt';
-			
-			if(is_file($logfile)) {
-				$lines = file ($logfile);
-				//$letzte_zeile = $lines[count($lines)-1];
-				$letzte_zeile = array_slice($lines, -1);
-				$csv = array_map('str_getcsv', file($logfile));
-				array_walk($csv, function(&$a) use ($csv) {
-					$a = array_combine(array('start', 'area', 'end'), $a);
-				});
-			
-				$last = end($csv);
-			} else {
-				$datei = fopen($logfile,"a");
-			}
-			
-			if($status == 'offline' && $last["end"] == 'unknown') {	// gerät offline, route zurücksetzen falls begonnen
-				$lines = file ($logfile);
-				array_pop($lines);
-				$text = join('', $lines);
-				$fp = fopen($logfile, "w"); 
-				foreach($lines as $key => $text) {
-					fputs($fp, $text);
-				} 
-				fclose ($fp);
-			} elseif($row["routePos"] == 1 && $row["mode"] == 'mon_mitm' && ($last["start"] && $last["end"] != 'unknown' or empty($letzte_zeile))) {	// start route
-				$datei = fopen($logfile,"a");
-				fwrite($datei, date("Y-m-d H:i:s") . ',' . $row["name"] . ',' . 'unknown',100);
-				fclose($datei);
-			} elseif($row["routePos"] == $row["routeMax"] && $last["start"] && $last["end"] == 'unknown') {	// end route
-				$lines = file ($logfile);
-				if($last["area"] != $row["name"]) {	// die area ist eine andere wie zu beginn
-					array_pop($lines);
-					$text = join('', $lines);
-				} else {	// alles ok, route abschließen
-					$lines[count($lines)-1] = $last["start"] . ',' . $last["area"] . ',' . date("Y-m-d H:i:s") . "\n";
-				}
-				$fp = fopen($logfile, "w"); 
-				foreach($lines as $key => $text) {
-					fputs($fp, $text);
-				} 
-				fclose ($fp);
-			}
-		}
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		$nextOut++;
-		$ausgabe_mobile .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
-		
-		if($nextOut > $config["option"]["rows"]) {
-			$ausgabe2 .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
-		} else {
-			$ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
-		}
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        if($config["option"]["record"] == 1) {
+            $logfile = $structure.'/'.$origin.'.txt';
+            
+            if(is_file($logfile)) {
+                $lines = file ($logfile);
+                //$letzte_zeile = $lines[count($lines)-1];
+                $letzte_zeile = array_slice($lines, -1);
+                $csv = array_map('str_getcsv', file($logfile));
+                array_walk($csv, function(&$a) use ($csv) {
+                    $a = array_combine(array('start', 'area', 'end'), $a);
+                });
+            
+                $last = end($csv);
+            } else {
+                $datei = fopen($logfile,"a");
+            }
+            
+            if($status == 'offline' && $last["end"] == 'unknown') {    // gerät offline, route zurücksetzen falls begonnen
+                $lines = file ($logfile);
+                array_pop($lines);
+                $text = join('', $lines);
+                $fp = fopen($logfile, "w"); 
+                foreach($lines as $key => $text) {
+                    fputs($fp, $text);
+                } 
+                fclose ($fp);
+            } elseif($row["routePos"] == 1 && $row["mode"] == 'mon_mitm' && ($last["start"] && $last["end"] != 'unknown' or empty($letzte_zeile))) {    // start route
+                $datei = fopen($logfile,"a");
+                fwrite($datei, date("Y-m-d H:i:s") . ',' . $row["name"] . ',' . 'unknown',100);
+                fclose($datei);
+            } elseif($row["routePos"] == $row["routeMax"] && $last["start"] && $last["end"] == 'unknown') {    // end route
+                $lines = file ($logfile);
+                if($last["area"] != $row["name"]) {    // die area ist eine andere wie zu beginn
+                    array_pop($lines);
+                    $text = join('', $lines);
+                } else {    // alles ok, route abschließen
+                    $lines[count($lines)-1] = $last["start"] . ',' . $last["area"] . ',' . date("Y-m-d H:i:s") . "\n";
+                }
+                $fp = fopen($logfile, "w"); 
+                foreach($lines as $key => $text) {
+                    fputs($fp, $text);
+                } 
+                fclose ($fp);
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        $nextOut++;
+        $ausgabe_mobile .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+        
+        if($nextOut > $config["option"]["rows"]) {
+            $ausgabe2 .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+        } else {
+            $ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+        }
     } $i++;
 }
 $mysqli->close();
@@ -401,8 +401,8 @@ $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
 $quest_stat = '
 <div style="width:100%;clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
-	<span style="position:absolute;left:50%;transform:translate(-50%);font-size:14.5px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
-	<div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
+    <span style="position:absolute;left:50%;transform:translate(-50%);font-size:14.5px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
+    <div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
 </div>';
 
 //übernehme die url parameter in den ajax request
@@ -412,19 +412,19 @@ $ajaxData = json_encode($ajaxData);
 
 //wenn wir ajax machen, dann halte hier an
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
-	if (!isset($_GET['mute'])) {
-		echo $audio;
-	}
-	
-	echo $ausgabe_mobile  . '</table>' . $ausgabe . '</table>';
-	
-	if($nextOut > $config["option"]["rows"]) {
-		echo $ausgabe2 . '</table>';
-	}
-	echo "<script>var page_title = 'MAD - Worker Status (' + ". $o_title ." + ')';</script>";
-	//if($trs_quest['today'] != $trs_quest['total']) {
-		echo $quest_stat;
-	//}
+    if (!isset($_GET['mute'])) {
+        echo $audio;
+    }
+    
+    echo $ausgabe_mobile  . '</table>' . $ausgabe . '</table>';
+    
+    if($nextOut > $config["option"]["rows"]) {
+        echo $ausgabe2 . '</table>';
+    }
+    echo "<script>var page_title = 'MAD - Worker Status (' + ". $o_title ." + ')';</script>";
+    //if($trs_quest['today'] != $trs_quest['total']) {
+        echo $quest_stat;
+    //}
 //echo 'currently: '.time();
 //echo '<pre>';
 //print_r($_COOKIE);
@@ -438,9 +438,9 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
 <html lang="de">
     <head>
         <meta charset="utf-8"/>
-		<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <title>MAD - Worker Status (<?= $o_title ?>)</title>
         <style>
             * {
@@ -452,10 +452,10 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 background:<?=$colorBackground?>;
                 font-size:14.5px
             }
-			
-			#clock {
-				font-size:14.5px
-			}
+            
+            #clock {
+                font-size:14.5px
+            }
 
             td {
                 padding-left:5px;
@@ -493,12 +493,12 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 table {
                     width:100%
                 }
-				#tbl {
-					display:none
-				}
-				#tbl2 {
-					display:none
-				}
+                #tbl {
+                    display:none
+                }
+                #tbl2 {
+                    display:none
+                }
                 <?php if ($config["option"]["pos"] == 0) { ?> .pos { display: none} <?php } ?>
                 <?php if ($config["option"]["count"] == 0) { ?> .count { display: none} <?php } ?>
             }
@@ -508,45 +508,45 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 .mobile {
                     display:none
                 }
-				
-				<?php if($nextOut > $config["option"]["rows"]) { ?>
-					#tbl {
-						float:left;
-						width:50%;
-						border-right:solid 2px #CCCCCC
-					}
-					#tbl2 {
-						float:left;
-						width:50%;
-					}
-					
-					.output, #clock {
-						font-size:16px
-					}
-					
-				<?php } else { ?>
-					table {
-						width:<?= $config["option"]["breite"] ?>
-					}
-					.output, #clock {
-						font-size:<?= $config["option"]["size"] ?>
-					}
-				<?php } ?>
-				
-				@media only screen and (min-width: 751px) and (max-width: 900px) {
-					.output, #clock {
-						font-size:14px
-					}
-				}
-				@media only screen and (min-width: 550px) and (max-width: 750px) {
-					.output, #clock {
-						font-size:10px
-					}
-				}
-				
-				#tblmobile {
-					display:none
-				}
+                
+                <?php if($nextOut > $config["option"]["rows"]) { ?>
+                    #tbl {
+                        float:left;
+                        width:50%;
+                        border-right:solid 2px #CCCCCC
+                    }
+                    #tbl2 {
+                        float:left;
+                        width:50%;
+                    }
+                    
+                    .output, #clock {
+                        font-size:16px
+                    }
+                    
+                <?php } else { ?>
+                    table {
+                        width:<?= $config["option"]["breite"] ?>
+                    }
+                    .output, #clock {
+                        font-size:<?= $config["option"]["size"] ?>
+                    }
+                <?php } ?>
+                
+                @media only screen and (min-width: 751px) and (max-width: 900px) {
+                    .output, #clock {
+                        font-size:14px
+                    }
+                }
+                @media only screen and (min-width: 550px) and (max-width: 750px) {
+                    .output, #clock {
+                        font-size:10px
+                    }
+                }
+                
+                #tblmobile {
+                    display:none
+                }
             }
             .navbar{
                 min-height:17px
@@ -559,21 +559,21 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
             .navbar  a {
                 font-size: 14.2px;
             }
-			
-			.notify {
-				margin-left:8px
-			}
+            
+            .notify {
+                margin-left:8px
+            }
 
             .output {
                 padding-bottom:50px;
                 background:<?=$colorBackground?>;
-				height:100%;
-				color:<?=$colorFont?>
+                height:100%;
+                color:<?=$colorFont?>
             }
-			
-			i, material-icons {
-				vertical-align: middle;
-			}
+            
+            i, material-icons {
+                vertical-align: middle;
+            }
         </style>
 
     </head>
@@ -585,15 +585,15 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 echo $audio;
             }
             
-			echo $ausgabe_mobile  . '</table>' . $ausgabe . '</table>';
-			
-			if($nextOut > $config["option"]["rows"]) {
-				echo $ausgabe2 . '</table>';
-			}
+            echo $ausgabe_mobile  . '</table>' . $ausgabe . '</table>';
+            
+            if($nextOut > $config["option"]["rows"]) {
+                echo $ausgabe2 . '</table>';
+            }
 
-			//if($trs_quest['today'] != $trs_quest['total']) {
-				echo $quest_stat;
-			//}
+            //if($trs_quest['today'] != $trs_quest['total']) {
+                echo $quest_stat;
+            //}
 
 
 
@@ -606,7 +606,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
 
         <nav class="navbar py-0 fixed-bottom navbar-expand-md navbar-light" style="background-color:<?=$colorNav?>">
             <span class="navbar-brand">Worker Status <span id="countdown" class="reload">(<?= $config["option"]["reload"] ?>)</span> <span class="notify"><?= $set_notify ?></span>
-				<a href="#" id="goFS"><i class="material-icons">crop_free</i></a>
+                <a href="#" id="goFS"><i class="material-icons">crop_free</i></a>
 </span>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -634,22 +634,22 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <script>
-			function MitteFenster(Dateiname,PopUpBreite,PopUpHoehe) {
-				sbreite = screen.availWidth;
-				shoehe = screen.availHeight;
-				x = (sbreite-PopUpBreite)/2;
-				y = (shoehe-PopUpHoehe)/2;
-				Eigenschaften="left="+x+",top="+y+",screenX="+x+",screenY="+y+",width="+PopUpBreite+",height="+PopUpHoehe+",menubar=no,location=no,toolbar=no,status=no,resizable=no,scrollbars=no,dependent=yes";
-				fenster=window.open(Dateiname,"order",Eigenschaften);
-				fenster.focus();
-			}
-			
-			var goFS = document.getElementById("goFS");
-			goFS.addEventListener("click", function() {
-				document.body.requestFullscreen();
-			}, false);
-			
-			$(document).ready(function () {
+            function MitteFenster(Dateiname,PopUpBreite,PopUpHoehe) {
+                sbreite = screen.availWidth;
+                shoehe = screen.availHeight;
+                x = (sbreite-PopUpBreite)/2;
+                y = (shoehe-PopUpHoehe)/2;
+                Eigenschaften="left="+x+",top="+y+",screenX="+x+",screenY="+y+",width="+PopUpBreite+",height="+PopUpHoehe+",menubar=no,location=no,toolbar=no,status=no,resizable=no,scrollbars=no,dependent=yes";
+                fenster=window.open(Dateiname,"order",Eigenschaften);
+                fenster.focus();
+            }
+            
+            var goFS = document.getElementById("goFS");
+            goFS.addEventListener("click", function() {
+                document.body.requestFullscreen();
+            }, false);
+            
+            $(document).ready(function () {
                 // run the first time; all subsequent calls will take care of themselves
                 setTimeout(worker, <?=$config["option"]["reload"]*1000;?>);
 
@@ -662,7 +662,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                     data:<?= $ajaxData ?>,
                     success: function (data) {
                         $('#output').html(data);
-						$("title").text(page_title);
+                        $("title").text(page_title);
                     },
                     error: function (data) {
                         $('#output').html('Ein Fehler ist aufgetreten. Bitte Seite manuell neu laden.');
