@@ -1,5 +1,7 @@
 # mad_stuff with PHP :)
 
+#### HELP ON DISCORD: https://discord.gg/uYc22zn
+
 ### index.php
 - shows all devices live data with colored highlights, sorting and notification function
 
