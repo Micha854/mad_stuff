@@ -96,7 +96,7 @@ if (isset($_GET["mute"])) {
 $spalten = array(
     "origin" => "<b>Origin:</b><span class=\"mobile\"><br></span> ",
     "r.name" => "<b>Route:</b><span class=\"mobile\"><br></span> ",
-    "t.routePos" => "<b>Pos:</b><span class=\"mobile\"><br></span> ",
+    "t.routeMax" => "<b>Pos:</b><span class=\"mobile\"><br></span> ",
     "t.lastProtoDateTime" => "<b>Last:</b><span class=\"mobile\"><br></span> ",
     "t.currentSleepTime" => "<b>Next:</b><span class=\"mobile\"><br></span> ");
 
@@ -135,7 +135,7 @@ foreach ($spalten as $spalte => $name) {
         $active2 = '';
     }
 
-    if ($spalte == 't.routePos') {
+    if ($spalte == 't.routeMax') {
         $ausgabe .= '<td class="pos">' .
                 ucfirst($name) .
                 '<a href="?spalte=' . $spalte . '&sort=asc" ' . $active . ' title="Aufsteigend sortieren">&#9650;</a>' .
