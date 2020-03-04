@@ -24,6 +24,7 @@ instance_id = data["option"]["instance_id"]
 
 def connect_sourcedb(): 
     connectionSourceDB = pymysql.connect(host=data["db"]["dbHost"],
+                             port=data["py-option"]["dbPort"],
                              user=data["db"]["dbUsername"],
                              password=data["db"]["dbPassword"],
                              db=data["database"]["mapadroid"],
@@ -33,6 +34,7 @@ def connect_sourcedb():
 
 def connect_destdb(): 							 
     connectionDestDB = pymysql.connect(host=data["db"]["dbHost"],
+                             port=data["py-option"]["dbPort"],
                              user=data["db"]["dbUsername"],
                              password=data["db"]["dbPassword"],
                              db=data["database"]["stats"],

@@ -1,6 +1,6 @@
 {
     "db": {
-        "dbHost":        "localhost",
+        "dbHost":        "localhost",       "_comment": "to use another mysql port set the host to '127.0.0.1:3306' ",
         "dbUsername":    "DB-USER",
         "dbPassword":    "DB-PASSWORD"
     },
@@ -13,7 +13,8 @@
     "py-option": {
         "timeout":       10,                "_comment": "in minutes, Device is offline when ProtoDate older then this value",
         "interval":      60,                "_comment": "in seconds, Fetching intervall for status",
-        "cleanup":       14,                "_comment": "in days, Deleting entries from destdb older than configured days"
+        "cleanup":       14,                "_comment": "in days, Deleting entries from destdb older than configured days",
+        "dbPort":        3306,              "_comment": "mysql port to use, default is 3306"
     },
     
     "option": {
