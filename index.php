@@ -213,26 +213,26 @@ while ($row = $sql->fetch_array()) {
         $secs = floor($seconds % 60);
 
         if ($seconds < 60) {
-            $time = "$secs sec ago";
+            $time = "$secs sec <span id='tbl'>ago</span>";
         } else if ($seconds < 60 * 60) {
             if ($seconds > $config["option"]["wartime"] + $next_seconds) {
-                $time = "<span class=\"warn\">$mins min ago</span>";
+                $time = "<span class=\"warn\">$mins min <span id='tbl'>ago</span></span>";
             } else {
-                $time = "$mins min ago";
+                $time = "$mins min <span id='tbl'>ago</span>";
             }
         } else if ($seconds < 24 * 60 * 60) {
             $out_hours = ($hours > 1 ? 'hours' : 'hour');
             if ($seconds > $config["option"]["wartime"] + $next_seconds) {
-                $time = "<span class=\"warn\">$hours $out_hours ago</span>";
+                $time = "<span class=\"warn\">$hours $out_hours <span id='tbl'>ago</span></span>";
             } else {
-                $time = "$hours $out_hours ago";
+                $time = "$hours $out_hours <span id='tbl'>ago</span>";
             }
         } else if ($seconds > 24 * 60 * 60) {
             $out_day = ($day > 1 ? 'days' : 'day');
-            $time = "$day $out_day ago";
+            $time = "$day $out_day <span id='tbl'>ago</span>";
         } else if ($seconds > 30 * 24 * 60 * 60) {
             $out_months = ($months > 1 ? 'months' : 'month');
-            $time = "$months $out_months ago";
+            $time = "$months $out_months <span id='tbl'>ago</span>";
         }
 
         $cooldown = $config["option"]["timeout"] * 60 + $next_seconds;
