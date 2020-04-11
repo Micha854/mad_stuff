@@ -395,13 +395,16 @@ if (isset($_GET['mute']) && $_GET['mute'] == 'reset') {
     }
 }
 
-$o_title = ($o > 0 ? $o : 'OK');
+$o_title = $o > 0 ? $o : "OK";
 
 $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
+$quest_position = str_replace("%", "", $config["option"]["breite"]);
+$quest_position = $quest_position / 2;
+
 $quest_stat = '
-<div style="width:100%;clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
-    <span style="position:absolute;left:50%;transform:translate(-50%);font-size:14.5px;font-style:italic">Quests: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
+<div style="width:'.$config["option"]["breite"].';clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
+    <span style="position:absolute;left:'.$quest_position.'%;transform:translate(-'.$quest_position.'%);font-size:14.5px;font-style:italic">Quest: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
     <div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
 </div>';
 
@@ -421,7 +424,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
     if($nextOut > $config["option"]["rows"]) {
         echo $ausgabe2 . '</table>';
     }
-    echo "<script>var page_title = 'MAD - Worker Status (' + ". $o_title ." + ')';</script>";
+    echo "<script>var page_title = 'MAD - Worker Status (' + '". $o_title ."' + ')';</script>";
     //if($trs_quest['today'] != $trs_quest['total']) {
         echo $quest_stat;
     //}
