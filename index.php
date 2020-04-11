@@ -213,26 +213,26 @@ while ($row = $sql->fetch_array()) {
         $secs = floor($seconds % 60);
 
         if ($seconds < 60) {
-            $time = "$secs sec <span id='tbl'>ago</span>";
+            $time = "$secs sec <span class='ago'>ago</span>";
         } else if ($seconds < 60 * 60) {
             if ($seconds > $config["option"]["wartime"] + $next_seconds) {
-                $time = "<span class=\"warn\">$mins min <span id='tbl'>ago</span></span>";
+                $time = "<span class=\"warn\">$mins min <span class='ago'>ago</span></span>";
             } else {
-                $time = "$mins min <span id='tbl'>ago</span>";
+                $time = "$mins min <span class='ago'>ago</span>";
             }
         } else if ($seconds < 24 * 60 * 60) {
             $out_hours = ($hours > 1 ? 'hours' : 'hour');
             if ($seconds > $config["option"]["wartime"] + $next_seconds) {
-                $time = "<span class=\"warn\">$hours $out_hours <span id='tbl'>ago</span></span>";
+                $time = "<span class=\"warn\">$hours $out_hours <span class='ago'>ago</span></span>";
             } else {
-                $time = "$hours $out_hours <span id='tbl'>ago</span>";
+                $time = "$hours $out_hours <span class='ago'>ago</span>";
             }
         } else if ($seconds > 24 * 60 * 60) {
             $out_day = ($day > 1 ? 'days' : 'day');
-            $time = "$day $out_day <span id='tbl'>ago</span>";
+            $time = "$day $out_day <span class='ago'>ago</span>";
         } else if ($seconds > 30 * 24 * 60 * 60) {
             $out_months = ($months > 1 ? 'months' : 'month');
-            $time = "$months $out_months <span id='tbl'>ago</span>";
+            $time = "$months $out_months <span class='ago'>ago</span>";
         }
 
         $cooldown = $config["option"]["timeout"] * 60 + $next_seconds;
@@ -399,12 +399,14 @@ $o_title = $o > 0 ? $o : "OK";
 
 $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
-$quest_position = str_replace("%", "", $config["option"]["breite"]);
+$quest_position = str_replace(array(["%","px"]), "", $config["option"]["breite"]);
 $quest_position = $quest_position / 2;
 
+
+
 $quest_stat = '
-<div style="width:'.$config["option"]["breite"].';clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
-    <span style="position:absolute;left:'.$quest_position.'%;transform:translate(-'.$quest_position.'%);font-size:14.5px;font-style:italic">Quest: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
+<div class="quest_bar" style="clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
+    <span class="quest_span" style="font-size:14.5px;font-style:italic">Quest: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
     <div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
 </div>';
 
@@ -502,6 +504,17 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 #tbl2 {
                     display:none
                 }
+                .ago {
+                    display:none
+                }
+                .quest_bar {
+                    width:100%
+                }
+                .quest_span {
+                    position:absolute;
+                    left:50%;
+                    transform:translate(-50%)
+                }
                 <?php if ($config["option"]["pos"] == 0) { ?> .pos { display: none} <?php } ?>
                 <?php if ($config["option"]["count"] == 0) { ?> .count { display: none} <?php } ?>
             }
@@ -511,6 +524,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 .mobile {
                     display:none
                 }
+                
                 
                 <?php if($nextOut > $config["option"]["rows"]) { ?>
                     #tbl {
@@ -522,9 +536,16 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                         float:left;
                         width:50%;
                     }
-                    
                     .output, #clock {
                         font-size:16px
+                    }
+                    .quest_bar {
+                        width:100%
+                    }
+                    .quest_span {
+                        position:absolute;
+                        left:50%;
+                        transform:translate(-50%)
                     }
                     
                 <?php } else { ?>
@@ -533,6 +554,16 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                     }
                     .output, #clock {
                         font-size:<?= $config["option"]["size"] ?>
+                    }
+                    .quest_bar {
+                        width:<?= $config["option"]["breite"] ?>
+                    }
+                    .quest_span {
+                        position:absolute;
+                        <?php if($config["option"]["breite"] == '100%') {
+                            echo 'left:50%;';
+                            echo 'transform:translate(-50%)';
+                        } ?>
                     }
                 <?php } ?>
                 
