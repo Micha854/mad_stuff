@@ -114,7 +114,7 @@ if (!in_array($sort, array('desc', 'asc'))) {
 // select all today's quest from all scanned
 $trs_quest = $mysqli->query("SELECT count(`GUID`) AS total
 ,(SELECT count(`GUID`) FROM trs_quest WHERE FROM_UNIXTIME(quest_timestamp,'%Y-%m-%d') = CURDATE()) AS today
-FROM trs_quest ")->fetch_array();
+FROM trs_quest q LEFT JOIN pokestop p ON q.GUID = p.pokestop_id WHERE q.GUID = p.pokestop_id ")->fetch_array();
 
 $sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id WHERE d.instance_id = $instance ORDER BY " . $spalte . " " . $sort . ", origin " . $sort);
 
