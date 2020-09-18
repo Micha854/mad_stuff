@@ -96,7 +96,7 @@ if (isset($_GET["mute"])) {
 $spalten = array(
     "origin" => "<b>Origin:</b><span class=\"mobile\"><br></span> ",
     "r.name" => "<b>Route:</b><span class=\"mobile\"><br></span> ",
-    "t.routeMax" => "<b>Pos:</b><span class=\"mobile\"><br></span> ",
+    "t.routeMax" => "<b>Points:</b><span class=\"mobile\"><br></span> ",
     "t.lastProtoDateTime" => "<b>Last:</b><span class=\"mobile\"><br></span> ",
     "t.currentSleepTime" => "<b>Next:</b><span class=\"mobile\"><br></span> ");
 
@@ -116,7 +116,7 @@ $trs_quest = $mysqli->query("SELECT count(`GUID`) AS total
 ,(SELECT count(`GUID`) FROM trs_quest WHERE FROM_UNIXTIME(quest_timestamp,'%Y-%m-%d') = CURDATE()) AS today
 FROM trs_quest q LEFT JOIN pokestop p ON q.GUID = p.pokestop_id WHERE q.GUID = p.pokestop_id ")->fetch_array();
 
-$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id WHERE d.instance_id = $instance ORDER BY " . $spalte . " " . $sort . ", origin " . $sort);
+$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id WHERE d.instance_id = $instance ORDER BY " . $spalte . " " . $sort . ", r.name, origin " . $sort);
 
 $ausgabe = '<table id="tbl"><tr><td class="count"><b>Count:</b></td>';
 $ausgabe2 = '<table id="tbl2"><tr><td class="count"><b>Count:</b></td>';
