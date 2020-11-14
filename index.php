@@ -405,13 +405,8 @@ $o_title = $o > 0 ? $o : "OK";
 
 $full_quest = $trs_quest['today'] * 100 / $trs_quest['total'];
 
-$quest_position = str_replace(array(["%","px"]), "", $config["option"]["breite"]);
-$quest_position = $quest_position / 2;
-
-
-
 $quest_stat = '
-<div class="quest_bar" style="clear:both;border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.'">
+<div class="quest_bar" style="border-bottom:solid 0.5px '.$colorNoQuest.';border-top:solid 0.1px '.$colorNoQuest.';position:fixed;bottom:38px">
     <span class="quest_span" style="font-size:14.5px;font-style:italic">Quest: '.number_format($full_quest,2).'% ('.$trs_quest['today'] .'/'.$trs_quest['total'].')</span>
     <div style="width:'.$full_quest.'%;display:block;min-height:21px;background:'.$colorQuest.'"></div>
 </div>';
@@ -535,12 +530,16 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
                 <?php if($nextOut > $config["option"]["rows"]) { ?>
                     #tbl {
                         float:left;
+						position:relative;
                         width:50%;
-                        border-right:solid 2px #CCCCCC
+                        border-right:solid 2px #CCCCCC;
+						margin-bottom:60px
                     }
                     #tbl2 {
                         float:left;
+						position:relative;
                         width:50%;
+						margin-bottom:60px
                     }
                     .output, #clock {
                         font-size:16px
@@ -619,7 +618,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'ajax_refresh') {
     </head>
     <body>
         <div id="javascript-timer-init" style="display:none"><?= $config["option"]["notify"] ?></div>
-        <div id="output" class="output">
+        <div id="output" class="output" style="margin-bottom:38px">
             <?php
             if (!isset($_GET['mute'])) {
                 echo $audio;
