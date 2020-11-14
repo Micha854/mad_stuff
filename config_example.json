@@ -34,6 +34,7 @@
         "notify":        1200,              "_comment": "repeat notification in seconds",
         "pos":           1,                 "_comment": "Route Pos show on mobile Version",
         "count":         0,                 "_comment": "counter of notification in mobile page",
-        "instance_id":   1,                 "_comment": "instance ID of Madmin"
+        "instance_id":   1,                 "_comment": "instance ID of Madmin",
+		"restartCount":  false,			    "_comment": "display restartCounter on Route; Route(count)"
     }
 }

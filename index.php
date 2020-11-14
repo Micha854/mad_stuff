@@ -116,7 +116,7 @@ $trs_quest = $mysqli->query("SELECT count(`GUID`) AS total
 ,(SELECT count(`GUID`) FROM trs_quest WHERE FROM_UNIXTIME(quest_timestamp,'%Y-%m-%d') = CURDATE()) AS today
 FROM trs_quest q LEFT JOIN pokestop p ON q.GUID = p.pokestop_id WHERE q.GUID = p.pokestop_id ")->fetch_array();
 
-$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id WHERE d.instance_id = $instance ORDER BY " . $spalte . " " . $sort . ", r.name, origin " . $sort);
+$sql = $mysqli->query("SELECT d.name AS origin, t.lastProtoDateTime, t.currentSleepTime, r.name, r.mode, t.routePos, t.routeMax, t.restartCounter FROM settings_device d LEFT JOIN trs_status t ON d.device_id = t.device_id LEFT JOIN settings_area r ON r.area_id = t.area_id WHERE d.instance_id = $instance ORDER BY " . $spalte . " " . $sort . ", r.name, origin " . $sort);
 
 $ausgabe = '<table id="tbl"><tr><td class="count"><b>Count:</b></td>';
 $ausgabe2 = '<table id="tbl2"><tr><td class="count"><b>Count:</b></td>';
@@ -308,6 +308,12 @@ while ($row = $sql->fetch_array()) {
         } else {
             $maxRoute = $row["routeMax"];
         }
+
+        if($row["restartCounter"] and $config["option"]["restartCount"] === true) {
+            $restartCounter = '<span class="warn">('.$row["restartCounter"].')</span>';
+        } else {
+            $restartCounter = '';
+        }
         
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         if($config["option"]["record"] == 1) {
@@ -357,12 +363,12 @@ while ($row = $sql->fetch_array()) {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         $nextOut++;
-        $ausgabe_mobile .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+        $ausgabe_mobile .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"].$restartCounter . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
         
         if($nextOut > $config["option"]["rows"]) {
-            $ausgabe2 .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+            $ausgabe2 .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"].$restartCounter . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
         } else {
-            $ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"] . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
+            $ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"].$restartCounter . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
         }
     } $i++;
 }
