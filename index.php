@@ -181,9 +181,12 @@ while ($row = $sql->fetch_array()) {
     $next_seconds = $row["currentSleepTime"];
     $clock = $config["option"]["record"] == 1 ? '<a href="javascript:MitteFenster(\'times.php?file='.$origin.'.txt\', 500, 600);"><i class="material-icons" id="clock">query_builder</i></a>' : '';
     if ($row["lastProtoDateTime"] == NULL) {
-        $ausgabe .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
-        $ausgabe2 .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
         $ausgabe_mobile .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        if($nextOut > $config["option"]["rows"]) {
+            $ausgabe2 .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        } else {
+            $ausgabe .= "<tr style=\"background:$colorRed\"><td class='count'></td><td>" . $origin . "</td><td>N/A</td><td class='pos'>N/A</td><td>N/A</td><td>N/A</td>";
+        }
     } else {
 
         $next_months = floor($next_seconds / (3600 * 24 * 30));
