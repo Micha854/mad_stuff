@@ -365,7 +365,6 @@ while ($row = $sql->fetch_array()) {
             }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        $nextOut++;
         $ausgabe_mobile .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"].$restartCounter . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
         
         if($nextOut > $config["option"]["rows"]) {
@@ -373,7 +372,9 @@ while ($row = $sql->fetch_array()) {
         } else {
             $ausgabe .= "<tr style=\"background:" . $background . "\">$timer<td>" . $mute . "</td><td>" . $row["name"].$restartCounter . "</td><td class='pos'>" . $row["routePos"] . "/" . $maxRoute . "</td><td>$time</td><td>$next</td>";
         }
-    } $i++;
+    }
+    $i++;
+    $nextOut++;
 }
 $mysqli->close();
 
